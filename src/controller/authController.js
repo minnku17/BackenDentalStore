@@ -5,7 +5,6 @@ const registerUser = async (req, res) => {
     let response = await userService.handleRegisterUser(req.body);
     return res.status(200).json(response);
   } catch (e) {
-    console.log(e);
     return res.status(200).json({
       errCode: -1,
       errMessage: "Error from server...",
@@ -43,8 +42,7 @@ const handleLogin = async (req, res) => {
 };
 const handleRefreshToken = async (req, res) => {
   let refreshToken = req.cookies.refreshToken;
-  if (!refreshToken)
-    return res.status(401).json("You're not authenticatedaaaaaaaaa");
+  if (!refreshToken) return res.status(401).json("You're not authenticate");
 
   let verifyRefreshToken = await userService.handleRefreshToken(refreshToken);
 
@@ -60,7 +58,7 @@ const handleRefreshToken = async (req, res) => {
 
 const handleLogout = async (req, res) => {
   await res.clearCookie("refreshToken");
-  let response = await userService.handleLogout(req.body.id);
+  let response = await userService.handleLogout(req.query.id);
 
   return res.status(200).json(response);
 };

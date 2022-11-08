@@ -6,7 +6,6 @@ const verifyToken = (req, res, next) => {
   if (token) {
     const accessToken = token.split(" ")[1];
     jwt.verify(accessToken, process.env.JWT_ACCESS_KEY, (err, user) => {
-      console.log(accessToken);
       if (err) {
         return res.status(200).json({
           errCode: 1,
@@ -17,17 +16,16 @@ const verifyToken = (req, res, next) => {
       next();
     });
   } else {
-    return res.status(200).json("You're not authenticatedssssssssssss");
+    return res.status(200).json("You're not authenticate");
   }
 };
 
 const verifyTokenAndAdminAuth = (req, res, next) => {
   verifyToken(req, res, () => {
-    console.log(req.user.roleId);
     if (req.user.id == req.body.id || req.user.roleId === "Admin") {
       next();
     } else {
-      return res.status(200).json("You're not allowed to delete other");
+      return res.status(200).json("You're not allowed to access permission");
     }
   });
 };

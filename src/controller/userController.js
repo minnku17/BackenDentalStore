@@ -1,4 +1,17 @@
+import { query } from "express";
 import userService from "../services/userService";
+
+const registerCustomer = async (req, res) => {
+  try {
+    let response = await userService.handleRegisterUser(req.body);
+    return res.status(200).json(response);
+  } catch (e) {
+    return res.status(200).json({
+      errCode: -1,
+      errMessage: "Error from server...",
+    });
+  }
+};
 
 let handleLogin = async (req, res) => {
   let email = req.body.email;
@@ -35,7 +48,7 @@ const handleGetAllUsers = async (req, res) => {
 };
 const handleDeleteUser = async (req, res) => {
   try {
-    let response = await userService.handleDeleteUser(req.body.id);
+    let response = await userService.handleDeleteUser(req.query.id);
     return res.status(200).json(response);
   } catch (e) {
     console.log(e);
@@ -45,8 +58,38 @@ const handleDeleteUser = async (req, res) => {
     });
   }
 };
+
+const handleEditUser = async (req, res) => {
+  try {
+    let response = await userService.handleEditUser(req.body);
+    return res.status(200).json(response);
+  } catch (e) {
+    console.log(e);
+    return res.status(200).json({
+      errCode: -1,
+      errMessage: "Error from server...",
+    });
+  }
+};
+
+const handleGetUserInfoById = async (req, res) => {
+  try {
+    let response = await userService.handleGetUserInfoById(req.query.id);
+    return res.status(200).json(response);
+  } catch (e) {
+    console.log(e);
+    return res.status(200).json({
+      errCode: -1,
+      errMessage: "Error from server...",
+    });
+  }
+};
+
 module.exports = {
   handleLogin,
   handleGetAllUsers,
   handleDeleteUser,
+  handleGetUserInfoById,
+  handleEditUser,
+  registerCustomer,
 };

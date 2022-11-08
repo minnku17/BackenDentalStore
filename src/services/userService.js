@@ -24,6 +24,7 @@ let handleRegisterUser = (data) => {
           lastName: data.lastName,
           address: data.address,
           phonenumber: data.phonenumber,
+          image: data.avatar,
           positionId: data.positionId,
           gender: data.gender,
           roleId: data.roleId,
@@ -34,7 +35,59 @@ let handleRegisterUser = (data) => {
           errMessage: "Create user successfully!",
         });
       }
-      //Create new user
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+
+let handleRegisterCustomer = (data) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      ///Hash password
+      if (
+        !data.email ||
+        !data.password ||
+        !data.firstName ||
+        !data.lastName ||
+        !data.gender ||
+        !data.address
+      ) {
+        const salt = await bcrypt.genSalt(10);
+        const hased = await bcrypt.hash(data.password, salt);
+
+        let checkMail = await checkUserEmail(data.email);
+
+        if (checkMail === true) {
+          resolve({
+            errCode: 1,
+            errMessage: "Email already exists",
+          });
+        } else {
+          await db.User.create({
+            email: data.email,
+            password: hased,
+            firstName: data.firstName,
+            lastName: data.lastName,
+            address: data.address,
+            phonenumber: data.phonenumber,
+            image: data.avatar,
+            positionId: "customer",
+            gender: data.gender,
+            roleId: "customer",
+          });
+
+          resolve({
+            errCode: 0,
+            errMessage: "Create user successfully!",
+          });
+        }
+      } else {
+        reject({
+          errCode: 1,
+          errMessage: "Missing required",
+        });
+      }
     } catch (e) {
       reject(e);
     }
@@ -75,8 +128,16 @@ let handleUserLogin = (email, password) => {
       if (isExits) {
         //user is already exits
         let user = await db.User.findOne({
-          attributes: ["id", "email", "password", "roleId", "rememberToken"],
           where: { email: email },
+          attributes: [
+            "id",
+            "image",
+            "email",
+            "password",
+            "roleId",
+            "rememberToken",
+          ],
+
           raw: true,
         });
         if (user) {
@@ -93,6 +154,10 @@ let handleUserLogin = (email, password) => {
                 where: { id: user.id },
               }
             );
+
+            if (user.image) {
+              user.image = new Buffer(user.image, "base64").toString("binary");
+            }
 
             userData.errCode = 0;
             userData.errMessage = "OK";
@@ -126,8 +191,6 @@ let handleRefreshToken = (refreshToken) => {
       let user = await db.User.findOne({
         where: { rememberToken: refreshToken },
       });
-
-      console.log(user);
       if (!user) {
         resolve({
           errCode: -1,
@@ -188,7 +251,15 @@ let handleGetAllUsers = () => {
         attributes: {
           exclude: ["password"],
         },
+        raw: true,
       });
+
+      user.forEach((item) => {
+        if (item.image) {
+          item.image = new Buffer(item.image, "base64").toString("binary");
+        }
+      });
+
       if (user) {
         resolve({
           errCode: 0,
@@ -206,6 +277,61 @@ let handleGetAllUsers = () => {
   });
 };
 
+let handleEditUser = (data) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (
+        !data.id ||
+        !data.firstName ||
+        !data.lastName ||
+        !data.roleId ||
+        !data.gender ||
+        !data.phonenumber
+      ) {
+        resolve({
+          errCode: 2,
+          errMessage: "Missing required parameter!",
+        });
+      }
+
+      let user = await db.User.findOne({
+        where: { id: data.id },
+        raw: true,
+      });
+
+      if (user) {
+        await db.User.update(
+          {
+            firstName: data.firstName,
+            lastName: data.lastName,
+            phonenumber: data.phonenumber,
+            address: data.address,
+            roleId: data.roleId,
+            positionId: data.positionId,
+            image: data.avatar,
+            gender: data.gender,
+          },
+          {
+            where: { id: user.id },
+          }
+        );
+
+        resolve({
+          errCode: 0,
+          errMessage: "Update user successfully",
+        });
+      } else {
+        resolve({
+          errCode: 1,
+          errMessage: "User not found",
+        });
+      }
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+
 let handleDeleteUser = (inputId) => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -213,9 +339,9 @@ let handleDeleteUser = (inputId) => {
         where: { id: inputId },
       });
       if (user) {
-        // await db.User.destroy({
-        //   where: { id: inputId },
-        // });
+        await db.User.destroy({
+          where: { id: inputId },
+        });
         resolve({
           errCode: 0,
           errMessage: "Deleted user!",
@@ -254,6 +380,32 @@ let handleLogout = (id) => {
   });
 };
 
+let handleGetUserInfoById = (id) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let user = await db.User.findOne({
+        where: { id: id },
+        attributes: {
+          exclude: ["password"],
+        },
+      });
+
+      if (user.image) {
+        user.image = new Buffer(user.image, "base64").toString("binary");
+      }
+
+      if (user) {
+        resolve({
+          errCode: 0,
+          data: user,
+        });
+      }
+    } catch (e) {
+      reject(e);
+    }
+  });
+};
+
 module.exports = {
   handleUserLogin,
   checkUserEmail,
@@ -264,4 +416,7 @@ module.exports = {
   generateRefreshToken,
   handleRefreshToken,
   handleLogout,
+  handleGetUserInfoById,
+  handleEditUser,
+  handleRegisterCustomer,
 };
