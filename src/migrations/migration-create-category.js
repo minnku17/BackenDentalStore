@@ -18,20 +18,20 @@ module.exports = {
         allowNull: true,
       },
       is_parent: {
-        allowNull: false,
+        allowNull: true,
 
         type: Sequelize.STRING,
       },
       parent_id: {
         allowNull: false,
 
-        type: Sequelize.STRING,
+        type: Sequelize.BOOLEAN,
         allowNull: true,
       },
       status: {
         allowNull: false,
 
-        type: Sequelize.STRING,
+        type: Sequelize.BOOLEAN,
       },
       createdAt: {
         allowNull: false,

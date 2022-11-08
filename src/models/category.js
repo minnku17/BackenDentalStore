@@ -15,9 +15,9 @@ module.exports = (sequelize, DataTypes) => {
     {
       title: DataTypes.STRING,
       summary: DataTypes.STRING,
-      is_parent: DataTypes.STRING,
+      is_parent: DataTypes.BOOLEAN,
       parent_id: DataTypes.STRING,
-      status: DataTypes.STRING,
+      status: DataTypes.BOOLEAN,
     },
     {
       sequelize,
