@@ -85,15 +85,24 @@ let initWebRoutes = (app) => {
     );
 
     //Category API
-    router.post('/api/createNewCategory', productController.createNewCategory);
-    router.get('/api/getAllCategory', productController.getAllCategory);
-    router.get('/api/getAllParentCategory', productController.getAllParentCategory);
-    // router.get(
-    //     '/api/getAllCategory',
-    //     middlewareController.verifyToken,
-    //     middlewareController.verifyTokenAndAdminAuth,
-    //     productController.getAllCategory,
-    // );
+    router.post(
+        '/api/createNewCategory',
+        middlewareController.verifyToken,
+        middlewareController.verifyTokenAndAdminAuth,
+        productController.createNewCategory,
+    );
+    router.get(
+        '/api/getAllCategory',
+        middlewareController.verifyToken,
+        middlewareController.verifyTokenAndAdminAuth,
+        productController.getAllCategory,
+    );
+    router.get(
+        '/api/getAllParentCategory',
+        middlewareController.verifyToken,
+        middlewareController.verifyTokenAndAdminAuth,
+        productController.getAllParentCategory,
+    );
     router.put(
         '/api/editCategory',
         middlewareController.verifyToken,
@@ -105,6 +114,24 @@ let initWebRoutes = (app) => {
         middlewareController.verifyToken,
         middlewareController.verifyTokenAndAdminAuth,
         productController.handleDeleteCategory,
+    );
+
+    //Product API
+    router.post(
+        '/api/createNewProduct',
+        // middlewareController.verifyToken,
+        // middlewareController.verifyTokenAndAdminAuth,
+        productController.saveDetailProduct,
+    );
+    router.delete(
+        '/api/deleteProduct',
+
+        productController.handleDeleteProduct,
+    );
+    router.get(
+        '/api/getAllProduct',
+
+        productController.getAllProduct,
     );
 
     return app.use('/', router);

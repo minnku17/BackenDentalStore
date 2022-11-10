@@ -1,422 +1,396 @@
-import db from "../models/index";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import db from '../models/index';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 let handleRegisterUser = (data) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      ///Hash password
-      const salt = await bcrypt.genSalt(10);
-      const hased = await bcrypt.hash(data.password, salt);
+    return new Promise(async (resolve, reject) => {
+        try {
+            ///Hash password
+            const salt = await bcrypt.genSalt(10);
+            const hased = await bcrypt.hash(data.password, salt);
 
-      let checkMail = await checkUserEmail(data.email);
+            let checkMail = await checkUserEmail(data.email);
 
-      if (checkMail === true) {
-        resolve({
-          errCode: 1,
-          errMessage: "Email already exists",
-        });
-      } else {
-        await db.User.create({
-          email: data.email,
-          password: hased,
-          firstName: data.firstName,
-          lastName: data.lastName,
-          address: data.address,
-          phonenumber: data.phonenumber,
-          image: data.avatar,
-          positionId: data.positionId,
-          gender: data.gender,
-          roleId: data.roleId,
-        });
+            if (checkMail === true) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Email already exists',
+                });
+            } else {
+                await db.User.create({
+                    email: data.email,
+                    password: hased,
+                    firstName: data.firstName,
+                    lastName: data.lastName,
+                    address: data.address,
+                    phonenumber: data.phonenumber,
+                    image: data.avatar,
+                    positionId: data.positionId,
+                    gender: data.gender,
+                    roleId: data.roleId,
+                });
 
-        resolve({
-          errCode: 0,
-          errMessage: "Create user successfully!",
-        });
-      }
-    } catch (e) {
-      reject(e);
-    }
-  });
+                resolve({
+                    errCode: 0,
+                    errMessage: 'Create user successfully!',
+                });
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
 };
 
 let handleRegisterCustomer = (data) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      ///Hash password
-      if (
-        !data.email ||
-        !data.password ||
-        !data.firstName ||
-        !data.lastName ||
-        !data.gender ||
-        !data.address
-      ) {
-        const salt = await bcrypt.genSalt(10);
-        const hased = await bcrypt.hash(data.password, salt);
+    return new Promise(async (resolve, reject) => {
+        try {
+            ///Hash password
+            if (!data.email || !data.password || !data.firstName || !data.lastName || !data.gender || !data.address) {
+                const salt = await bcrypt.genSalt(10);
+                const hased = await bcrypt.hash(data.password, salt);
 
-        let checkMail = await checkUserEmail(data.email);
+                let checkMail = await checkUserEmail(data.email);
 
-        if (checkMail === true) {
-          resolve({
-            errCode: 1,
-            errMessage: "Email already exists",
-          });
-        } else {
-          await db.User.create({
-            email: data.email,
-            password: hased,
-            firstName: data.firstName,
-            lastName: data.lastName,
-            address: data.address,
-            phonenumber: data.phonenumber,
-            image: data.avatar,
-            positionId: "customer",
-            gender: data.gender,
-            roleId: "customer",
-          });
+                if (checkMail === true) {
+                    resolve({
+                        errCode: 1,
+                        errMessage: 'Email already exists',
+                    });
+                } else {
+                    await db.User.create({
+                        email: data.email,
+                        password: hased,
+                        firstName: data.firstName,
+                        lastName: data.lastName,
+                        address: data.address,
+                        phonenumber: data.phonenumber,
+                        image: data.avatar,
+                        positionId: 'customer',
+                        gender: data.gender,
+                        roleId: 'customer',
+                    });
 
-          resolve({
-            errCode: 0,
-            errMessage: "Create user successfully!",
-          });
+                    resolve({
+                        errCode: 0,
+                        errMessage: 'Create user successfully!',
+                    });
+                }
+            } else {
+                reject({
+                    errCode: 1,
+                    errMessage: 'Missing required',
+                });
+            }
+        } catch (e) {
+            reject(e);
         }
-      } else {
-        reject({
-          errCode: 1,
-          errMessage: "Missing required",
-        });
-      }
-    } catch (e) {
-      reject(e);
-    }
-  });
+    });
 };
 
 //GENERATE ACCESS TOKEN
 const generateAccessToken = (user) => {
-  return jwt.sign(
-    {
-      id: user.id,
-      roleId: user.roleId,
-    },
-    process.env.JWT_ACCESS_KEY,
-    {
-      expiresIn: "20s",
-    }
-  );
+    return jwt.sign(
+        {
+            id: user.id,
+            roleId: user.roleId,
+        },
+        process.env.JWT_ACCESS_KEY,
+        {
+            expiresIn: '20s',
+        },
+    );
 };
 const generateRefreshToken = (user) => {
-  return jwt.sign(
-    {
-      id: user.id,
-      roleId: user.roleId,
-    },
-    process.env.JWT_REFRESH_KEY,
-    {
-      expiresIn: "365d",
-    }
-  );
+    return jwt.sign(
+        {
+            id: user.id,
+            roleId: user.roleId,
+        },
+        process.env.JWT_REFRESH_KEY,
+        {
+            expiresIn: '365d',
+        },
+    );
 };
 
 let handleUserLogin = (email, password) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      let userData = {};
-      let isExits = await checkUserEmail(email);
-      if (isExits) {
-        //user is already exits
-        let user = await db.User.findOne({
-          where: { email: email },
-          attributes: [
-            "id",
-            "image",
-            "email",
-            "password",
-            "roleId",
-            "rememberToken",
-          ],
+    return new Promise(async (resolve, reject) => {
+        try {
+            let userData = {};
+            let isExits = await checkUserEmail(email);
+            if (isExits) {
+                //user is already exits
+                let user = await db.User.findOne({
+                    where: { email: email },
+                    attributes: ['id', 'image', 'email', 'password', 'roleId', 'rememberToken'],
 
-          raw: true,
-        });
-        if (user) {
-          let check = await bcrypt.compareSync(password, user.password);
-          if (check) {
-            const accessToken = generateAccessToken(user);
-            const refreshToken = generateRefreshToken(user);
+                    raw: true,
+                });
+                if (user) {
+                    let check = await bcrypt.compareSync(password, user.password);
+                    if (check) {
+                        const accessToken = generateAccessToken(user);
+                        const refreshToken = generateRefreshToken(user);
 
-            await db.User.update(
-              {
-                rememberToken: refreshToken,
-              },
-              {
-                where: { id: user.id },
-              }
-            );
+                        await db.User.update(
+                            {
+                                rememberToken: refreshToken,
+                            },
+                            {
+                                where: { id: user.id },
+                            },
+                        );
 
-            if (user.image) {
-              user.image = new Buffer(user.image, "base64").toString("binary");
+                        if (user.image) {
+                            user.image = new Buffer(user.image, 'base64').toString('binary');
+                        }
+
+                        userData.errCode = 0;
+                        userData.errMessage = 'OK';
+                        delete user.password;
+                        userData.user = user;
+                        userData.accessToken = accessToken;
+                        userData.refreshToken = refreshToken;
+                        delete user.rememberToken;
+                    } else {
+                        userData.errCode = 3;
+                        userData.errMessage = 'Wrong password';
+                    }
+                } else {
+                    (userData.errCode = 2), (userData.errMessage = 'User is not found! ');
+                }
+            } else {
+                //return error
+                (userData.errCode = 1),
+                    (userData.errMessage = "Your's Email isn't exits in your system. Plz try other email! ");
             }
-
-            userData.errCode = 0;
-            userData.errMessage = "OK";
-            delete user.password;
-            userData.user = user;
-            userData.accessToken = accessToken;
-            userData.refreshToken = refreshToken;
-            delete user.rememberToken;
-          } else {
-            userData.errCode = 3;
-            userData.errMessage = "Wrong password";
-          }
-        } else {
-          (userData.errCode = 2), (userData.errMessage = "User is not found! ");
+            resolve(userData);
+        } catch (e) {
+            reject(e);
         }
-      } else {
-        //return error
-        (userData.errCode = 1),
-          (userData.errMessage =
-            "Your's Email isn't exits in your system. Plz try other email! ");
-      }
-      resolve(userData);
-    } catch (e) {
-      reject(e);
-    }
-  });
+    });
 };
 let handleRefreshToken = (refreshToken) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      let user = await db.User.findOne({
-        where: { rememberToken: refreshToken },
-      });
-      if (!user) {
-        resolve({
-          errCode: -1,
-          errMessage: "Refresh token is not valid",
-        });
-      }
-      jwt.verify(
-        refreshToken,
-        process.env.JWT_REFRESH_KEY,
-        async (err, userToken) => {
-          if (err) {
-            console.log(err);
-          }
-          const newAccessToken = generateAccessToken(userToken);
-          const newFreshToken = generateRefreshToken(userToken);
-
-          await db.User.update(
-            {
-              rememberToken: newFreshToken,
-            },
-            {
-              where: { id: user.id },
+    return new Promise(async (resolve, reject) => {
+        try {
+            let user = await db.User.findOne({
+                where: { rememberToken: refreshToken },
+            });
+            if (!user) {
+                resolve({
+                    errCode: -1,
+                    errMessage: 'Refresh token is not valid',
+                });
             }
-          );
+            jwt.verify(refreshToken, process.env.JWT_REFRESH_KEY, async (err, userToken) => {
+                if (err) {
+                    console.log(err);
+                }
+                const newAccessToken = generateAccessToken(userToken);
+                const newFreshToken = generateRefreshToken(userToken);
 
-          resolve({
-            accessToken: newAccessToken,
-            refreshToken: newFreshToken,
-          });
+                await db.User.update(
+                    {
+                        rememberToken: newFreshToken,
+                    },
+                    {
+                        where: { id: user.id },
+                    },
+                );
+
+                resolve({
+                    accessToken: newAccessToken,
+                    refreshToken: newFreshToken,
+                });
+            });
+        } catch (error) {
+            reject(error);
         }
-      );
-    } catch (error) {
-      reject(error);
-    }
-  });
+    });
 };
 let checkUserEmail = (emailUser) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      let user = await db.User.findOne({
-        where: { email: emailUser },
-      });
-      if (user) {
-        resolve(true);
-      } else {
-        resolve(false);
-      }
-    } catch (e) {
-      reject(e);
-    }
-  });
+    return new Promise(async (resolve, reject) => {
+        try {
+            let user = await db.User.findOne({
+                where: { email: emailUser },
+            });
+            if (user) {
+                resolve(true);
+            } else {
+                resolve(false);
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
 };
 
 let handleGetAllUsers = () => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      let user = await db.User.findAll({
-        attributes: {
-          exclude: ["password"],
-        },
-        raw: true,
-      });
+    return new Promise(async (resolve, reject) => {
+        try {
+            let user = await db.User.findAll({
+                attributes: {
+                    exclude: ['password'],
+                },
+                raw: true,
+            });
 
-      user.forEach((item) => {
-        if (item.image) {
-          item.image = new Buffer(item.image, "base64").toString("binary");
+            user.forEach((item) => {
+                if (item.image) {
+                    item.image = new Buffer(item.image, 'base64').toString('binary');
+                }
+            });
+
+            if (user) {
+                resolve({
+                    errCode: 0,
+                    data: user,
+                });
+            } else {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Cannot find user',
+                });
+            }
+        } catch (e) {
+            reject(e);
         }
-      });
-
-      if (user) {
-        resolve({
-          errCode: 0,
-          data: user,
-        });
-      } else {
-        resolve({
-          errCode: 1,
-          errMessage: "Cannot find user",
-        });
-      }
-    } catch (e) {
-      reject(e);
-    }
-  });
+    });
 };
 
 let handleEditUser = (data) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      if (
-        !data.id ||
-        !data.firstName ||
-        !data.lastName ||
-        !data.roleId ||
-        !data.gender ||
-        !data.phonenumber
-      ) {
-        resolve({
-          errCode: 2,
-          errMessage: "Missing required parameter!",
-        });
-      }
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.id || !data.firstName || !data.lastName || !data.roleId || !data.gender || !data.phonenumber) {
+                resolve({
+                    errCode: 2,
+                    errMessage: 'Missing required parameter!',
+                });
+            }
 
-      let user = await db.User.findOne({
-        where: { id: data.id },
-        raw: true,
-      });
+            let user = await db.User.findOne({
+                where: { id: data.id },
+                raw: true,
+            });
 
-      if (user) {
-        await db.User.update(
-          {
-            firstName: data.firstName,
-            lastName: data.lastName,
-            phonenumber: data.phonenumber,
-            address: data.address,
-            roleId: data.roleId,
-            positionId: data.positionId,
-            image: data.avatar,
-            gender: data.gender,
-          },
-          {
-            where: { id: user.id },
-          }
-        );
+            if (user) {
+                await db.User.update(
+                    {
+                        firstName: data.firstName,
+                        lastName: data.lastName,
+                        phonenumber: data.phonenumber,
+                        address: data.address,
+                        roleId: data.roleId,
+                        positionId: data.positionId,
+                        image: data.avatar,
+                        gender: data.gender,
+                    },
+                    {
+                        where: { id: user.id },
+                    },
+                );
 
-        resolve({
-          errCode: 0,
-          errMessage: "Update user successfully",
-        });
-      } else {
-        resolve({
-          errCode: 1,
-          errMessage: "User not found",
-        });
-      }
-    } catch (e) {
-      reject(e);
-    }
-  });
+                resolve({
+                    errCode: 0,
+                    errMessage: 'Update user successfully',
+                });
+            } else {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'User not found',
+                });
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
 };
 
 let handleDeleteUser = (inputId) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      let user = await db.User.findOne({
-        where: { id: inputId },
-      });
-      if (user) {
-        await db.User.destroy({
-          where: { id: inputId },
-        });
-        resolve({
-          errCode: 0,
-          errMessage: "Deleted user!",
-        });
-      } else {
-        resolve({
-          errCode: 1,
-          errMessage: "Cannot find user on system",
-        });
-      }
-    } catch (e) {
-      reject(e);
-    }
-  });
+    return new Promise(async (resolve, reject) => {
+        try {
+            let user = await db.User.findOne({
+                where: { id: inputId },
+            });
+            if (user) {
+                await db.User.destroy({
+                    where: { id: inputId },
+                });
+                resolve({
+                    errCode: 0,
+                    errMessage: 'Deleted user!',
+                });
+            } else {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Cannot find user on system',
+                });
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
 };
 
 let handleLogout = (id) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      await db.User.update(
-        {
-          rememberToken: null,
-        },
-        {
-          where: { id: id },
-        }
-      );
+    return new Promise(async (resolve, reject) => {
+        try {
+            await db.User.update(
+                {
+                    rememberToken: null,
+                },
+                {
+                    where: { id: id },
+                },
+            );
 
-      resolve({
-        errCode: 0,
-        errMessage: "Logged out!!",
-      });
-    } catch (e) {
-      reject(e);
-    }
-  });
+            resolve({
+                errCode: 0,
+                errMessage: 'Logged out!!',
+            });
+        } catch (e) {
+            reject(e);
+        }
+    });
 };
 
 let handleGetUserInfoById = (id) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      let user = await db.User.findOne({
-        where: { id: id },
-        attributes: {
-          exclude: ["password"],
-        },
-      });
+    return new Promise(async (resolve, reject) => {
+        try {
+            let user = await db.User.findOne({
+                where: { id: id },
+                attributes: {
+                    exclude: ['password'],
+                },
+            });
 
-      if (user.image) {
-        user.image = new Buffer(user.image, "base64").toString("binary");
-      }
+            if (user.image) {
+                user.image = new Buffer(user.image, 'base64').toString('binary');
+            }
 
-      if (user) {
-        resolve({
-          errCode: 0,
-          data: user,
-        });
-      }
-    } catch (e) {
-      reject(e);
-    }
-  });
+            if (user) {
+                resolve({
+                    errCode: 0,
+                    data: user,
+                });
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
 };
 
 module.exports = {
-  handleUserLogin,
-  checkUserEmail,
-  handleRegisterUser,
-  handleGetAllUsers,
-  handleDeleteUser,
-  generateAccessToken,
-  generateRefreshToken,
-  handleRefreshToken,
-  handleLogout,
-  handleGetUserInfoById,
-  handleEditUser,
-  handleRegisterCustomer,
+    handleUserLogin,
+    checkUserEmail,
+    handleRegisterUser,
+    handleGetAllUsers,
+    handleDeleteUser,
+    generateAccessToken,
+    generateRefreshToken,
+    handleRefreshToken,
+    handleLogout,
+    handleGetUserInfoById,
+    handleEditUser,
+    handleRegisterCustomer,
 };

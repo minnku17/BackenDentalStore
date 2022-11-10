@@ -109,6 +109,42 @@ const handleDeleteCategory = async (req, res) => {
     }
 };
 
+const saveDetailProduct = async (req, res) => {
+    try {
+        let response = await productService.saveDetailProduct(req.body);
+        return res.status(200).json(response);
+    } catch (e) {
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server...',
+        });
+    }
+};
+
+const handleDeleteProduct = async (req, res) => {
+    try {
+        let response = await productService.handleDeleteProduct(req.query.id);
+        return res.status(200).json(response);
+    } catch (e) {
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server...',
+        });
+    }
+};
+
+const getAllProduct = async (req, res) => {
+    try {
+        let response = await productService.getAllProduct();
+        return res.status(200).json(response);
+    } catch (e) {
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server...',
+        });
+    }
+};
+
 module.exports = {
     createNewBrand,
     getAllBrands,
@@ -119,4 +155,7 @@ module.exports = {
     editCategory,
     handleDeleteCategory,
     getAllParentCategory,
+    saveDetailProduct,
+    handleDeleteProduct,
+    getAllProduct,
 };
