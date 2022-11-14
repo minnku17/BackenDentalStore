@@ -32,7 +32,7 @@ let initWebRoutes = (app) => {
     );
     router.post('/api/login', authController.handleLogin);
     middlewareController.verifyToken,
-        router.post('/api/logout', middlewareController.verifyToken, authController.handleLogout);
+        router.get('/api/logout', middlewareController.verifyToken, authController.handleLogout);
 
     //refreshToken
 
@@ -133,6 +133,14 @@ let initWebRoutes = (app) => {
 
         productController.getAllProduct,
     );
+    router.get(
+        '/api/getProductInfoById',
+
+        productController.getProductInfoById,
+    );
+
+    //test api search
+    router.get('/api/search', productController.handleSearchProduct);
 
     return app.use('/', router);
 };

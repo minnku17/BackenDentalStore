@@ -1,44 +1,30 @@
 'use strict';
 module.exports = {
     up: async (queryInterface, Sequelize) => {
-        await queryInterface.createTable('Markdowns', {
+        await queryInterface.createTable('Banners', {
             id: {
                 allowNull: false,
                 autoIncrement: true,
                 primaryKey: true,
                 type: Sequelize.INTEGER,
             },
-            user_id: {
-                allowNull: true,
-
-                type: Sequelize.INTEGER,
-            },
-            product_id: {
-                allowNull: true,
-
-                type: Sequelize.INTEGER,
-            },
-            descriptionHtml: {
-                allowNull: true,
-
+            title: {
+                allowNull: false,
                 type: Sequelize.STRING,
             },
-
-            specificationHtml: {
-                type: Sequelize.STRING,
-                allowNull: true,
+            photo: {
+                allowNull: false,
+                type: Sequelize.BLOB('long'),
             },
-
-            featureHtml: {
+            summary: {
+                allowNull: false,
                 type: Sequelize.STRING,
-                allowNull: true,
             },
-
-            assignHtml: {
-                type: Sequelize.STRING,
-                allowNull: true,
+            status: {
+                allowNull: false,
+                type: Sequelize.BOOLEAN,
+                defaultValue: true,
             },
-
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE,
@@ -50,6 +36,6 @@ module.exports = {
         });
     },
     down: async (queryInterface, Sequelize) => {
-        await queryInterface.dropTable('Markdowns');
+        await queryInterface.dropTable('Banners');
     },
 };

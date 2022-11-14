@@ -1,7 +1,7 @@
 'use strict';
 module.exports = {
     up: async (queryInterface, Sequelize) => {
-        await queryInterface.createTable('Markdowns', {
+        await queryInterface.createTable('Orders', {
             id: {
                 allowNull: false,
                 autoIncrement: true,
@@ -9,36 +9,54 @@ module.exports = {
                 type: Sequelize.INTEGER,
             },
             user_id: {
-                allowNull: true,
+                allowNull: false,
+                type: Sequelize.INTEGER,
+            },
+            order_number: {
+                allowNull: false,
+                type: Sequelize.INTEGER,
+            },
+            sub_total: {
+                allowNull: false,
 
                 type: Sequelize.INTEGER,
             },
-            product_id: {
-                allowNull: true,
-
-                type: Sequelize.INTEGER,
-            },
-            descriptionHtml: {
-                allowNull: true,
+            quantity: {
+                allowNull: false,
 
                 type: Sequelize.STRING,
             },
+            lastName: {
+                allowNull: false,
 
-            specificationHtml: {
+                type: Sequelize.STRING,
+            },
+            firstName: {
+                allowNull: false,
+
+                type: Sequelize.STRING,
+            },
+            address: {
+                allowNull: false,
+
+                type: Sequelize.STRING,
+            },
+            phonenumber: {
+                allowNull: false,
+
+                type: Sequelize.STRING,
+            },
+            email: {
+                allowNull: false,
+
+                type: Sequelize.STRING,
+            },
+            status: {
+                allowNull: false,
+
                 type: Sequelize.STRING,
                 allowNull: true,
             },
-
-            featureHtml: {
-                type: Sequelize.STRING,
-                allowNull: true,
-            },
-
-            assignHtml: {
-                type: Sequelize.STRING,
-                allowNull: true,
-            },
-
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE,
@@ -50,6 +68,6 @@ module.exports = {
         });
     },
     down: async (queryInterface, Sequelize) => {
-        await queryInterface.dropTable('Markdowns');
+        await queryInterface.dropTable('Orders');
     },
 };

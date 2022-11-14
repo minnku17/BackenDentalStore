@@ -145,6 +145,29 @@ const getAllProduct = async (req, res) => {
     }
 };
 
+const getProductInfoById = async (req, res) => {
+    try {
+        let response = await productService.getProductInfoById(req.query.id);
+        return res.status(200).json(response);
+    } catch (e) {
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server...',
+        });
+    }
+};
+const handleSearchProduct = async (req, res) => {
+    try {
+        let response = await productService.handleSearchProduct(req.query.q);
+        return res.status(200).json(response);
+    } catch (e) {
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server...',
+        });
+    }
+};
+
 module.exports = {
     createNewBrand,
     getAllBrands,
@@ -158,4 +181,6 @@ module.exports = {
     saveDetailProduct,
     handleDeleteProduct,
     getAllProduct,
+    getProductInfoById,
+    handleSearchProduct,
 };

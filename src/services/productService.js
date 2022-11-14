@@ -1,4 +1,5 @@
 import db from '../models/index';
+const { Op } = require('sequelize');
 
 //Brand
 const createNewBrand = (data) => {
@@ -137,6 +138,8 @@ const createNewCategory = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
             if (!data.title || !data.status) {
+                console.log(data.status);
+
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing parameters!!!',
@@ -436,6 +439,66 @@ const getAllProduct = () => {
         }
     });
 };
+const getProductInfoById = (id) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let res = await db.Product.findOne({
+                where: { id: id },
+                include: [
+                    {
+                        model: db.Markdown,
+                    },
+                ],
+            });
+
+            if (!res) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Product not exist:!!!',
+                });
+            } else {
+                res.photo = new Buffer(res.photo, 'base64').toString('binary');
+                resolve({
+                    errCode: 0,
+                    data: res,
+                });
+            }
+        } catch (e) {
+            console.log(e);
+            reject(e);
+        }
+    });
+};
+const handleSearchProduct = (q) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let options = {
+                where: {
+                    [Op.or]: [
+                        { title: { [Op.like]: '%' + q + '%' } },
+                        // { '$Product.body$': { [Op.like]: '%' + query + '%' } },
+                    ],
+                },
+                raw: true,
+            };
+
+            let res = await db.Product.findAll(options);
+
+            if (res) {
+                resolve({
+                    errCode: 0,
+                    data: res,
+                });
+            } else {
+                console.log('lõi');
+            }
+        } catch (e) {
+            console.log(e);
+            reject(e);
+        }
+    });
+};
+
 module.exports = {
     createNewBrand,
     getAllBrands,
@@ -449,4 +512,6 @@ module.exports = {
     saveDetailProduct,
     handleDeleteProduct,
     getAllProduct,
+    getProductInfoById,
+    handleSearchProduct,
 };
