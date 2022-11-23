@@ -17,17 +17,21 @@ let handleRegisterUser = (data) => {
                     errMessage: 'Email already exists',
                 });
             } else {
-                await db.User.create({
+                let res = await db.User.create({
                     email: data.email,
                     password: hased,
                     firstName: data.firstName,
                     lastName: data.lastName,
                     address: data.address,
                     phonenumber: data.phonenumber,
-                    image: data.avatar,
                     positionId: data.positionId,
                     gender: data.gender,
                     roleId: data.roleId,
+                });
+
+                await db.Image.create({
+                    user_id: res.id,
+                    photo: data.avatar,
                 });
 
                 resolve({
@@ -57,17 +61,21 @@ let handleRegisterCustomer = (data) => {
                         errMessage: 'Email already exists',
                     });
                 } else {
-                    await db.User.create({
+                    let res = await db.User.create({
                         email: data.email,
                         password: hased,
                         firstName: data.firstName,
                         lastName: data.lastName,
                         address: data.address,
                         phonenumber: data.phonenumber,
-                        image: data.avatar,
                         positionId: 'customer',
                         gender: data.gender,
                         roleId: 'customer',
+                    });
+
+                    await db.Image.create({
+                        user_id: res.id,
+                        photo: data.avatar,
                     });
 
                     resolve({
@@ -122,10 +130,15 @@ let handleUserLogin = (email, password) => {
                 //user is already exits
                 let user = await db.User.findOne({
                     where: { email: email },
-                    attributes: ['id', 'image', 'email', 'password', 'roleId', 'rememberToken'],
-
-                    raw: true,
+                    attributes: ['id', 'email', 'password', 'roleId', 'rememberToken'],
+                    include: [
+                        {
+                            model: db.Image,
+                            attributes: ['photo'],
+                        },
+                    ],
                 });
+                console.log(user);
                 if (user) {
                     let check = await bcrypt.compareSync(password, user.password);
                     if (check) {
@@ -141,8 +154,8 @@ let handleUserLogin = (email, password) => {
                             },
                         );
 
-                        if (user.image) {
-                            user.image = new Buffer(user.image, 'base64').toString('binary');
+                        if (user.Image) {
+                            user.Image.photo = new Buffer(user.Image.photo, 'base64').toString('binary');
                         }
 
                         userData.errCode = 0;
@@ -232,12 +245,17 @@ let handleGetAllUsers = () => {
                 attributes: {
                     exclude: ['password'],
                 },
-                raw: true,
+                include: [
+                    {
+                        model: db.Image,
+                        attributes: ['photo'],
+                    },
+                ],
             });
 
             user.forEach((item) => {
-                if (item.image) {
-                    item.image = new Buffer(item.image, 'base64').toString('binary');
+                if (item.Image) {
+                    item.Image.photo = new Buffer(item.Image.photo, 'base64').toString('binary');
                 }
             });
 
@@ -274,7 +292,7 @@ let handleEditUser = (data) => {
             });
 
             if (user) {
-                await db.User.update(
+                let res = await db.User.update(
                     {
                         firstName: data.firstName,
                         lastName: data.lastName,
@@ -287,6 +305,15 @@ let handleEditUser = (data) => {
                     },
                     {
                         where: { id: user.id },
+                    },
+                );
+
+                await db.Image.update(
+                    {
+                        photo: data.avatar,
+                    },
+                    {
+                        where: { user_id: user.id },
                     },
                 );
 
@@ -315,6 +342,10 @@ let handleDeleteUser = (inputId) => {
             if (user) {
                 await db.User.destroy({
                     where: { id: inputId },
+                });
+
+                await db.Image.destroy({
+                    where: { user_id: inputId },
                 });
                 resolve({
                     errCode: 0,
@@ -362,10 +393,16 @@ let handleGetUserInfoById = (id) => {
                 attributes: {
                     exclude: ['password'],
                 },
+                include: [
+                    {
+                        model: db.Image,
+                        attributes: ['photo'],
+                    },
+                ],
             });
 
-            if (user.image) {
-                user.image = new Buffer(user.image, 'base64').toString('binary');
+            if (user.Image) {
+                user.Image.photo = new Buffer(user.Image.photo, 'base64').toString('binary');
             }
 
             if (user) {

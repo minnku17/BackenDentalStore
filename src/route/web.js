@@ -24,15 +24,15 @@ let initWebRoutes = (app) => {
         middlewareController.verifyTokenAndAdminAuth,
         authController.registerUser,
     );
+    router.post('/api/login', authController.handleLogin);
+
+    router.get('/api/logout', middlewareController.verifyToken, authController.handleLogout);
     //create a customer
     router.post(
         '/api/registerCustomer',
 
         userController.registerCustomer,
     );
-    router.post('/api/login', authController.handleLogin);
-    middlewareController.verifyToken,
-        router.get('/api/logout', middlewareController.verifyToken, authController.handleLogout);
 
     //refreshToken
 
@@ -97,12 +97,7 @@ let initWebRoutes = (app) => {
         middlewareController.verifyTokenAndAdminAuth,
         productController.getAllCategory,
     );
-    router.get(
-        '/api/getAllParentCategory',
-        middlewareController.verifyToken,
-        middlewareController.verifyTokenAndAdminAuth,
-        productController.getAllParentCategory,
-    );
+    router.get('/api/getAllParentCategory', productController.getAllParentCategory);
     router.put(
         '/api/editCategory',
         middlewareController.verifyToken,
@@ -119,8 +114,8 @@ let initWebRoutes = (app) => {
     //Product API
     router.post(
         '/api/createNewProduct',
-        // middlewareController.verifyToken,
-        // middlewareController.verifyTokenAndAdminAuth,
+        middlewareController.verifyToken,
+        middlewareController.verifyTokenAndAdminAuth,
         productController.saveDetailProduct,
     );
     router.delete(
@@ -134,13 +129,18 @@ let initWebRoutes = (app) => {
         productController.getAllProduct,
     );
     router.get(
+        '/api/getAllProductHome',
+
+        productController.getAllProductHome,
+    );
+    router.get(
         '/api/getProductInfoById',
 
         productController.getProductInfoById,
     );
 
     //test api search
-    router.get('/api/search', productController.handleSearchProduct);
+    router.get('/api/search-product', productController.handleSearchProduct);
 
     return app.use('/', router);
 };

@@ -12,10 +12,7 @@ module.exports = {
                 allowNull: false,
                 type: Sequelize.STRING,
             },
-            photo: {
-                allowNull: false,
-                type: Sequelize.BLOB('long'),
-            },
+
             summary: {
                 allowNull: false,
                 type: Sequelize.STRING,

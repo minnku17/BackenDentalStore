@@ -23,10 +23,15 @@ const createNewBrand = (data) => {
                 } else {
                     let brand = await db.Brand.create({
                         title: data.title,
-                        photo: data.photo,
                         status: data.status,
                     });
 
+                    if (data.photo) {
+                        await db.Image.create({
+                            brand_id: brand.id,
+                            photo: data.photo,
+                        });
+                    }
                     resolve({
                         errCode: 0,
                         errMessage: 'Create brand successfully!!!',
@@ -43,15 +48,29 @@ const getAllBrands = () => {
     return new Promise(async (resolve, reject) => {
         try {
             let res = await db.Brand.findAll({
-                raw: true,
+                include: [
+                    {
+                        model: db.Image,
+                        attributes: ['photo'],
+                    },
+                ],
             });
+
             if (res) {
+                res.forEach((item) => {
+                    if (item.Image) {
+                        item.Image.photo = new Buffer(item.Image?.photo, 'base64').toString('binary');
+                    }
+                });
+
+                console.log(res);
                 resolve({
                     errCode: 0,
                     data: res,
                 });
             }
         } catch (e) {
+            console.log(e);
             reject(e);
         }
     });
@@ -66,8 +85,24 @@ const editBrand = (data) => {
             });
 
             if (brand) {
-                (brand.title = data.title), (brand.photo = data.photo), (brand.status = data.status);
-                await brand.save();
+                await db.Brand.update(
+                    {
+                        title: data.title,
+                        status: data.status,
+                    },
+                    {
+                        where: { id: data.id },
+                    },
+                );
+
+                await db.Image.update(
+                    {
+                        photo: data.photo,
+                    },
+                    {
+                        where: { brand_id: data.id },
+                    },
+                );
                 resolve({
                     errCode: 0,
                     errMessage: 'Update brand successfully!!!',
@@ -103,6 +138,9 @@ const handleDeleteBrand = (id) => {
                 await db.Brand.destroy({
                     where: { id: id },
                 });
+                await db.Image.destroy({
+                    where: { brand_id: id },
+                });
                 resolve({
                     errCode: 0,
                     errMessage: 'Delete brand successfully!!!',
@@ -117,29 +155,10 @@ const handleDeleteBrand = (id) => {
 
 //Category
 
-const getAllParentCategory = () => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            let allCat = await db.Category.findAll({
-                where: { is_parent: 1 },
-            });
-            resolve({
-                errCode: 0,
-                data: allCat,
-            });
-        } catch (error) {
-            console.log(error);
-            reject(error);
-        }
-    });
-};
-
 const createNewCategory = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
             if (!data.title || !data.status) {
-                console.log(data.status);
-
                 resolve({
                     errCode: 1,
                     errMessage: 'Missing parameters!!!',
@@ -147,20 +166,26 @@ const createNewCategory = (data) => {
             } else {
                 let res = await db.Category.findOne({
                     where: { title: data.title },
-                    raw: true,
                 });
+
                 if (res) {
                     resolve({
                         errCode: 2,
                         errMessage: 'The Category already exists in the system',
                     });
                 } else {
-                    await db.Category.create({
+                    let res = await db.Category.create({
                         title: data.title,
                         summary: data.summary,
+                        photo: data.image,
+
                         is_parent: data.is_parent,
                         parent_id: data.parent_id,
                         status: data.status,
+                    });
+                    await db.Image.create({
+                        cat_id: res.id,
+                        photo: data.image,
                     });
 
                     resolve({
@@ -179,9 +204,22 @@ const getAllCategory = () => {
     return new Promise(async (resolve, reject) => {
         try {
             let res = await db.Category.findAll({
-                raw: true,
+                raw: false,
+                include: [
+                    {
+                        model: db.Image,
+                        attributes: ['photo'],
+                    },
+                ],
             });
+
             if (res) {
+                res.forEach((item) => {
+                    if (item.Image.photo) {
+                        item.Image.photo = new Buffer(item.Image.photo, 'base64').toString('binary');
+                    }
+                });
+
                 resolve({
                     errCode: 0,
                     data: res,
@@ -189,6 +227,34 @@ const getAllCategory = () => {
             }
         } catch (e) {
             reject(e);
+        }
+    });
+};
+const getAllParentCategory = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let allCat = await db.Category.findAll({
+                where: { is_parent: 1 },
+                include: [
+                    {
+                        model: db.Image,
+                        attributes: ['photo'],
+                    },
+                ],
+            });
+            allCat.forEach((item) => {
+                if (item.Image.photo) {
+                    item.Image.photo = new Buffer(item.Image.photo, 'base64').toString('binary');
+                }
+            });
+
+            resolve({
+                errCode: 0,
+                data: allCat,
+            });
+        } catch (error) {
+            console.log(error);
+            reject(error);
         }
     });
 };
@@ -202,12 +268,27 @@ const editCategory = (data) => {
             });
 
             if (Category) {
-                (Category.title = data.title),
-                    (Category.summary = data.summary),
-                    (Category.is_parent = data.is_parent),
-                    (Category.status = data.status),
-                    (Category.parent_id = data.parent_id);
-                await Category.save();
+                await db.Category.update(
+                    {
+                        title: data.title,
+                        summary: data.summary,
+                        is_parent: data.is_parent,
+                        status: data.status,
+                        parent_id: data.parent_id,
+                    },
+                    {
+                        where: { id: Category.id },
+                    },
+                );
+                await db.Image.update(
+                    {
+                        photo: data.image,
+                    },
+                    {
+                        where: { cat_id: data.id },
+                    },
+                );
+
                 resolve({
                     errCode: 0,
                     errMessage: 'Update Category successfully!!!',
@@ -340,6 +421,19 @@ const saveDetailProduct = (data) => {
                             assignMarkdown: data.assignMarkdown,
                         });
 
+                        let arrPhoto = [];
+
+                        data.photo.map((item) => {
+                            let obj = {};
+
+                            obj.product_id = res.id;
+                            obj.photo = item;
+
+                            return arrPhoto.push(obj);
+                        });
+
+                        await db.Image.bulkCreate(arrPhoto);
+
                         resolve({
                             errCode: 0,
                             errMessage: 'Create product successfully',
@@ -382,6 +476,21 @@ const saveDetailProduct = (data) => {
                         await productMarkdown.save();
                     }
 
+                    await db.Image.destroy({
+                        where: { product_id: res.id },
+                    });
+                    let arrPhoto = [];
+                    data.photo.map((item) => {
+                        let obj = {};
+
+                        obj.product_id = res.id;
+                        obj.photo = item;
+
+                        return arrPhoto.push(obj);
+                    });
+
+                    await db.Image.bulkCreate(arrPhoto);
+
                     resolve({
                         errCode: 0,
                         errMessage: 'Edit product successfully',
@@ -422,15 +531,75 @@ const handleDeleteProduct = (id) => {
 const getAllProduct = () => {
     return new Promise(async (resolve, reject) => {
         try {
-            let res = await db.Product.findAll();
+            let res = await db.Product.findAll({
+                raw: false,
+                include: [
+                    {
+                        model: db.Image,
+                        attributes: ['photo'],
+                    },
+                ],
+            });
 
             if (res) {
-                res.forEach((item) => {
-                    return (item.photo = new Buffer(item.photo, 'base64').toString('binary'));
-                });
+                if (res.Images) {
+                    res.forEach((item) => {
+                        item.Images.map((item) => {
+                            return (item.photo = new Buffer(item.photo, 'base64').toString('binary'));
+                        });
+                    });
+                }
                 resolve({
                     errCode: 0,
                     data: res,
+                });
+            }
+        } catch (e) {
+            console.log(e);
+            reject(e);
+        }
+    });
+};
+
+const getAllProductHome = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let res = await db.Product.findAll({
+                attributes: ['id', 'title', 'price', 'sold', 'discount'],
+                include: [
+                    {
+                        model: db.Brand,
+                        attributes: ['title'],
+                    },
+                    {
+                        model: db.Image,
+                        attributes: ['photo'],
+                    },
+                ],
+            });
+
+            if (res) {
+                // res.forEach((item) => {
+                //     return (item.photo = new Buffer(item.photo, 'base64').toString('binary'));
+                // });
+                let arr = [];
+                res.map((item) => {
+                    let productData = {};
+                    let imageR = new Buffer(item.Images[0].photo, 'base64').toString('binary');
+                    productData.brand = item.Brand?.title;
+                    productData.image = imageR;
+                    productData.discount = item.discount;
+                    productData.id = item.id;
+                    productData.price = item.price;
+                    productData.sold = item.sold;
+                    productData.title = item.title;
+
+                    arr.push(productData);
+
+                    resolve({
+                        errCode: 0,
+                        data: arr,
+                    });
                 });
             }
         } catch (e) {
@@ -444,9 +613,17 @@ const getProductInfoById = (id) => {
         try {
             let res = await db.Product.findOne({
                 where: { id: id },
+                // attributes: ['title', ''],
                 include: [
                     {
                         model: db.Markdown,
+                    },
+                    {
+                        model: db.Markdown,
+                    },
+                    {
+                        model: db.Image,
+                        attributes: ['photo'],
                     },
                 ],
             });
@@ -457,7 +634,11 @@ const getProductInfoById = (id) => {
                     errMessage: 'Product not exist:!!!',
                 });
             } else {
-                res.photo = new Buffer(res.photo, 'base64').toString('binary');
+                if (res.Images) {
+                    res.Images.forEach((item) => {
+                        item.photo = new Buffer(item.photo, 'base64').toString('binary');
+                    });
+                }
                 resolve({
                     errCode: 0,
                     data: res,
@@ -479,12 +660,16 @@ const handleSearchProduct = (q) => {
                         // { '$Product.body$': { [Op.like]: '%' + query + '%' } },
                     ],
                 },
+                attributes: ['id', 'title', 'photo'],
                 raw: true,
             };
 
             let res = await db.Product.findAll(options);
 
             if (res) {
+                res.forEach((item) => {
+                    return (item.photo = new Buffer(item.photo, 'base64').toString('binary'));
+                });
                 resolve({
                     errCode: 0,
                     data: res,
@@ -514,4 +699,5 @@ module.exports = {
     getAllProduct,
     getProductInfoById,
     handleSearchProduct,
+    getAllProductHome,
 };
