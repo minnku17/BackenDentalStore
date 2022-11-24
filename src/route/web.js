@@ -92,11 +92,12 @@ let initWebRoutes = (app) => {
         productController.createNewCategory,
     );
     router.get(
-        '/api/getAllCategory',
+        '/api/getAllCategoryAdmin',
         middlewareController.verifyToken,
         middlewareController.verifyTokenAndAdminAuth,
-        productController.getAllCategory,
+        productController.getAllCategoryAdmin,
     );
+
     router.get('/api/getAllParentCategory', productController.getAllParentCategory);
     router.put(
         '/api/editCategory',
@@ -134,9 +135,27 @@ let initWebRoutes = (app) => {
         productController.getAllProductHome,
     );
     router.get(
+        '/api/getProductInfoAdminById',
+
+        productController.getProductInfoAdminById,
+    );
+    router.get(
         '/api/getProductInfoById',
 
         productController.getProductInfoById,
+    );
+    router.post(
+        '/api/handleReviewProduct',
+
+        productController.handleReviewProduct,
+    );
+
+    //customer
+
+    router.get(
+        '/api/getAllCategory',
+
+        productController.getAllCategory,
     );
 
     //test api search

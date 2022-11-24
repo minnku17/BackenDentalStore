@@ -8,6 +8,10 @@ module.exports = {
                 primaryKey: true,
                 type: Sequelize.INTEGER,
             },
+            review_id: {
+                allowNull: true,
+                type: Sequelize.INTEGER,
+            },
             email: {
                 type: Sequelize.STRING,
             },
@@ -29,6 +33,7 @@ module.exports = {
             roleId: {
                 type: Sequelize.STRING,
             },
+
             phonenumber: {
                 type: Sequelize.STRING,
             },

@@ -138,6 +138,7 @@ let handleUserLogin = (email, password) => {
                         },
                     ],
                 });
+
                 console.log(user);
                 if (user) {
                     let check = await bcrypt.compareSync(password, user.password);
@@ -154,7 +155,7 @@ let handleUserLogin = (email, password) => {
                             },
                         );
 
-                        if (user.Image) {
+                        if (user.Image.photo) {
                             user.Image.photo = new Buffer(user.Image.photo, 'base64').toString('binary');
                         }
 
@@ -254,7 +255,7 @@ let handleGetAllUsers = () => {
             });
 
             user.forEach((item) => {
-                if (item.Image) {
+                if (item.Image.photo) {
                     item.Image.photo = new Buffer(item.Image.photo, 'base64').toString('binary');
                 }
             });
@@ -401,7 +402,7 @@ let handleGetUserInfoById = (id) => {
                 ],
             });
 
-            if (user.Image) {
+            if (user.Image.photo) {
                 user.Image.photo = new Buffer(user.Image.photo, 'base64').toString('binary');
             }
 

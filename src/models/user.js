@@ -10,12 +10,17 @@ module.exports = (sequelize, DataTypes) => {
         static associate(models) {
             // define association here
             User.hasOne(models.Image, { foreignKey: 'user_id' });
+
+            User.hasOne(models.Review, {
+                foreignKey: 'user_id',
+            });
         }
     }
     User.init(
         {
             email: DataTypes.STRING,
             password: DataTypes.STRING,
+            review_id: DataTypes.INTEGER,
             firstName: DataTypes.STRING,
             lastName: DataTypes.STRING,
             address: DataTypes.STRING,

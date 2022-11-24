@@ -18,6 +18,11 @@ module.exports = {
 
                 type: Sequelize.INTEGER,
             },
+            product_id: {
+                allowNull: true,
+
+                type: Sequelize.INTEGER,
+            },
             rate: {
                 allowNull: false,
 

@@ -75,7 +75,9 @@ const getAllParentCategory = async (req, res) => {
 
 const getAllCategory = async (req, res) => {
     try {
-        let response = await productService.getAllCategory();
+        let limit = req.query.limit;
+        console.log(typeof limit);
+        let response = await productService.getAllCategory(+limit);
         return res.status(200).json(response);
     } catch (e) {
         return res.status(200).json({
@@ -84,7 +86,17 @@ const getAllCategory = async (req, res) => {
         });
     }
 };
-
+const getAllCategoryAdmin = async (req, res) => {
+    try {
+        let response = await productService.getAllCategoryAdmin();
+        return res.status(200).json(response);
+    } catch (e) {
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server...',
+        });
+    }
+};
 const editCategory = async (req, res) => {
     try {
         let response = await productService.editCategory(req.body);
@@ -145,6 +157,17 @@ const getAllProduct = async (req, res) => {
     }
 };
 
+const getProductInfoAdminById = async (req, res) => {
+    try {
+        let response = await productService.getProductInfoAdminById(req.query.id);
+        return res.status(200).json(response);
+    } catch (e) {
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server...',
+        });
+    }
+};
 const getProductInfoById = async (req, res) => {
     try {
         let response = await productService.getProductInfoById(req.query.id);
@@ -179,6 +202,18 @@ const getAllProductHome = async (req, res) => {
     }
 };
 
+const handleReviewProduct = async (req, res) => {
+    try {
+        let response = await productService.handleReviewProduct(req.body);
+        return res.status(200).json(response);
+    } catch (e) {
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server...',
+        });
+    }
+};
+
 module.exports = {
     createNewBrand,
     getAllBrands,
@@ -186,13 +221,16 @@ module.exports = {
     handleDeleteBrand,
     createNewCategory,
     getAllCategory,
+    getAllCategoryAdmin,
     editCategory,
     handleDeleteCategory,
     getAllParentCategory,
     saveDetailProduct,
     handleDeleteProduct,
     getAllProduct,
+    getProductInfoAdminById,
     getProductInfoById,
+    handleReviewProduct,
     handleSearchProduct,
     getAllProductHome,
 };

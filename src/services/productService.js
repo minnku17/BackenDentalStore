@@ -62,8 +62,6 @@ const getAllBrands = () => {
                         item.Image.photo = new Buffer(item.Image?.photo, 'base64').toString('binary');
                     }
                 });
-
-                console.log(res);
                 resolve({
                     errCode: 0,
                     data: res,
@@ -200,11 +198,46 @@ const createNewCategory = (data) => {
     });
 };
 
-const getAllCategory = () => {
+const getAllCategory = (limit) => {
     return new Promise(async (resolve, reject) => {
         try {
             let res = await db.Category.findAll({
                 raw: false,
+                limit: limit,
+                attributes: ['id', 'title', 'is_parent', 'parent_id', 'status'],
+
+                order: [['createdAt', 'DESC']],
+                include: [
+                    {
+                        model: db.Image,
+                        attributes: ['photo'],
+                    },
+                ],
+            });
+
+            if (res) {
+                res.forEach((item) => {
+                    if (item.Image.photo) {
+                        item.Image.photo = new Buffer(item.Image.photo, 'base64').toString('binary');
+                    }
+                });
+
+                resolve({
+                    errCode: 0,
+                    data: res,
+                });
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+const getAllCategoryAdmin = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let res = await db.Category.findAll({
+                raw: false,
+                order: [['createdAt', 'DESC']],
                 include: [
                     {
                         model: db.Image,
@@ -323,6 +356,10 @@ const handleDeleteCategory = (id) => {
                 );
                 await db.Category.destroy({
                     where: { id: id },
+                });
+
+                await db.Image.destroy({
+                    where: { cat_id: id },
                 });
 
                 resolve({
@@ -565,7 +602,7 @@ const getAllProductHome = () => {
     return new Promise(async (resolve, reject) => {
         try {
             let res = await db.Product.findAll({
-                attributes: ['id', 'title', 'price', 'sold', 'discount'],
+                attributes: ['id', 'title', 'price', 'sold', 'discount', 'unit_of_product'],
                 include: [
                     {
                         model: db.Brand,
@@ -593,6 +630,7 @@ const getAllProductHome = () => {
                     productData.price = item.price;
                     productData.sold = item.sold;
                     productData.title = item.title;
+                    productData.unit = item.unit_of_product;
 
                     arr.push(productData);
 
@@ -608,16 +646,13 @@ const getAllProductHome = () => {
         }
     });
 };
-const getProductInfoById = (id) => {
+const getProductInfoAdminById = (id) => {
     return new Promise(async (resolve, reject) => {
         try {
             let res = await db.Product.findOne({
                 where: { id: id },
                 // attributes: ['title', ''],
                 include: [
-                    {
-                        model: db.Markdown,
-                    },
                     {
                         model: db.Markdown,
                     },
@@ -650,6 +685,119 @@ const getProductInfoById = (id) => {
         }
     });
 };
+const getProductInfoById = (id) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let res = await db.Product.findOne({
+                where: { id: id },
+
+                include: [
+                    {
+                        model: db.Brand,
+                        attributes: ['title'],
+                    },
+                    {
+                        model: db.Category,
+                        attributes: ['title'],
+                    },
+
+                    {
+                        model: db.Markdown,
+                        attributes: ['descriptionHtml', 'specificationHtml', 'featureHtml', 'assignHtml'],
+                    },
+                    {
+                        model: db.Image,
+                        attributes: ['photo'],
+                    },
+                ],
+            });
+
+            let user = await db.User.findAll({
+                where: { review_id: id },
+                attributes: ['firstName', 'lastName'],
+                include: [
+                    {
+                        model: db.Image,
+                        attributes: ['photo'],
+                    },
+                    {
+                        model: db.Review,
+                        attributes: ['id', 'rate', 'title', 'description', 'status'],
+                    },
+                ],
+            });
+
+            user.map((item) => {
+                if (item.Image.photo) {
+                    item.Image.photo = new Buffer(item.Image.photo, 'base64').toString('binary');
+                }
+            });
+
+            let arrUser = [];
+            if (user) {
+                let obj = {};
+            }
+
+            let dataProduct = {};
+            dataProduct.dataProduct = res;
+            dataProduct.InfoUserReview = user;
+
+            if (!res) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Product not exist:!!!',
+                });
+            } else {
+                if (res.Images) {
+                    res.Images.forEach((item) => {
+                        item.photo = new Buffer(item.photo, 'base64').toString('binary');
+                    });
+                }
+
+                resolve({
+                    errCode: 0,
+                    data: dataProduct,
+                });
+            }
+        } catch (e) {
+            console.log(e);
+            reject(e);
+        }
+    });
+};
+
+const handleReviewProduct = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            await db.Review.create({
+                user_id: data.user_id,
+                product_id: data.product_id,
+                rate: data.rate,
+                title: data.title,
+                description: data.description,
+                status: true,
+            });
+
+            await db.User.update(
+                {
+                    review_id: data.product_id,
+                },
+                {
+                    where: { id: data.user_id },
+                },
+            );
+
+            resolve({
+                errCode: 0,
+                errMessage: 'Cảm ơn bạn đã đánh giá! ',
+            });
+        } catch (e) {
+            console.log(e);
+            reject(e);
+        }
+    });
+};
+
 const handleSearchProduct = (q) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -660,19 +808,36 @@ const handleSearchProduct = (q) => {
                         // { '$Product.body$': { [Op.like]: '%' + query + '%' } },
                     ],
                 },
-                attributes: ['id', 'title', 'photo'],
-                raw: true,
+                attributes: ['id', 'title'],
+                include: [
+                    {
+                        model: db.Image,
+                        attributes: ['photo'],
+                    },
+                ],
             };
 
             let res = await db.Product.findAll(options);
 
             if (res) {
-                res.forEach((item) => {
-                    return (item.photo = new Buffer(item.photo, 'base64').toString('binary'));
+                res.map((item) => {
+                    item.Images[0].photo = new Buffer(item.Images[0].photo, 'base64').toString('binary');
                 });
+
+                let dataSearch = [];
+
+                res.forEach((item) => {
+                    let obj = {};
+                    obj.id = item.id;
+                    obj.title = item.title;
+                    obj.photo = item.Images[0].photo;
+
+                    dataSearch.push(obj);
+                });
+
                 resolve({
                     errCode: 0,
-                    data: res,
+                    data: dataSearch,
                 });
             } else {
                 console.log('lõi');
@@ -691,13 +856,16 @@ module.exports = {
     handleDeleteBrand,
     createNewCategory,
     getAllCategory,
+    getAllCategoryAdmin,
     editCategory,
     handleDeleteCategory,
     getAllParentCategory,
     saveDetailProduct,
     handleDeleteProduct,
     getAllProduct,
+    getProductInfoAdminById,
     getProductInfoById,
     handleSearchProduct,
     getAllProductHome,
+    handleReviewProduct,
 };
