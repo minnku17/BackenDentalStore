@@ -12,9 +12,18 @@ module.exports = {
                 allowNull: false,
                 type: Sequelize.INTEGER,
             },
-            order_number: {
+            product_id: {
                 allowNull: false,
                 type: Sequelize.INTEGER,
+            },
+            order_number: {
+                allowNull: false,
+                type: Sequelize.STRING,
+            },
+            coupon: {
+                allowNull: null,
+
+                type: Sequelize.STRING,
             },
             sub_total: {
                 allowNull: false,

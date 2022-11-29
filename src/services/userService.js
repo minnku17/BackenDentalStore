@@ -49,7 +49,7 @@ let handleRegisterCustomer = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
             ///Hash password
-            if (!data.email || !data.password || !data.firstName || !data.lastName || !data.gender || !data.address) {
+            if (!data.email || !data.password || !data.firstName || !data.lastName) {
                 const salt = await bcrypt.genSalt(10);
                 const hased = await bcrypt.hash(data.password, salt);
 
@@ -66,11 +66,12 @@ let handleRegisterCustomer = (data) => {
                         password: hased,
                         firstName: data.firstName,
                         lastName: data.lastName,
+                        roleId: 'customer',
+
                         address: data.address,
                         phonenumber: data.phonenumber,
                         positionId: 'customer',
                         gender: data.gender,
-                        roleId: 'customer',
                     });
 
                     await db.Image.create({
@@ -130,7 +131,7 @@ let handleUserLogin = (email, password) => {
                 //user is already exits
                 let user = await db.User.findOne({
                     where: { email: email },
-                    attributes: ['id', 'email', 'password', 'roleId', 'rememberToken'],
+                    attributes: ['id', 'email', 'address', 'password', 'roleId', 'rememberToken'],
                     include: [
                         {
                             model: db.Image,
@@ -166,6 +167,53 @@ let handleUserLogin = (email, password) => {
                         userData.accessToken = accessToken;
                         userData.refreshToken = refreshToken;
                         delete user.rememberToken;
+                    } else {
+                        userData.errCode = 3;
+                        userData.errMessage = 'Wrong password';
+                    }
+                } else {
+                    (userData.errCode = 2), (userData.errMessage = 'User is not found! ');
+                }
+            } else {
+                //return error
+                (userData.errCode = 1),
+                    (userData.errMessage = "Your's Email isn't exits in your system. Plz try other email! ");
+            }
+            resolve(userData);
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+let handleCustomerLogin = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let userData = {};
+            let isExits = await checkUserEmail(data.email);
+            if (isExits) {
+                //user is already exits
+                let user = await db.User.findOne({
+                    where: { email: data.email },
+
+                    include: [
+                        {
+                            model: db.Image,
+                            attributes: ['photo'],
+                        },
+                    ],
+                });
+
+                console.log(user);
+                if (user) {
+                    let check = await bcrypt.compareSync(data.password, user.password);
+                    if (check) {
+                        if (user.Image.photo) {
+                            user.Image.photo = new Buffer(user.Image.photo, 'base64').toString('binary');
+                        }
+
+                        userData.errCode = 0;
+                        userData.errMessage = 'OK';
+                        userData.user = user;
                     } else {
                         userData.errCode = 3;
                         userData.errMessage = 'Wrong password';
@@ -431,4 +479,5 @@ module.exports = {
     handleGetUserInfoById,
     handleEditUser,
     handleRegisterCustomer,
+    handleCustomerLogin,
 };

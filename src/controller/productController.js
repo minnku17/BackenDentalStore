@@ -214,6 +214,71 @@ const handleReviewProduct = async (req, res) => {
     }
 };
 
+const handleAddProductToCart = async (req, res) => {
+    if (req.body) {
+        try {
+            let response = await productService.handleAddProductToCart(req.body);
+            return res.status(200).json(response);
+        } catch (e) {
+            return res.status(200).json({
+                errCode: -1,
+                errMessage: 'Error from server...',
+            });
+        }
+    }
+};
+
+const handleAddCoupon = async (req, res) => {
+    if (req.body) {
+        try {
+            let response = await productService.handleAddCoupon(req.body);
+            return res.status(200).json(response);
+        } catch (e) {
+            return res.status(200).json({
+                errCode: -1,
+                errMessage: 'Error from server...',
+            });
+        }
+    }
+};
+const handleUpdateCoupon = async (req, res) => {
+    if (req.body) {
+        try {
+            let response = await productService.handleUpdateCoupon(req.body);
+            return res.status(200).json(response);
+        } catch (e) {
+            return res.status(200).json({
+                errCode: -1,
+                errMessage: 'Error from server...',
+            });
+        }
+    }
+};
+const handleSearchCoupon = async (req, res) => {
+    try {
+        let response = await productService.handleSearchCoupon(req.query.q);
+        return res.status(200).json(response);
+    } catch (e) {
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server...',
+        });
+    }
+};
+
+const handleCreateOrder = async (req, res) => {
+    console.log('check:', req.body);
+    try {
+        let response = await productService.handleCreateOrder(req.body);
+        return res.status(200).json(response);
+    } catch (e) {
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server...',
+        });
+    }
+};
+
 module.exports = {
     createNewBrand,
     getAllBrands,
@@ -233,4 +298,9 @@ module.exports = {
     handleReviewProduct,
     handleSearchProduct,
     getAllProductHome,
+    handleAddProductToCart,
+    handleAddCoupon,
+    handleUpdateCoupon,
+    handleSearchCoupon,
+    handleCreateOrder,
 };

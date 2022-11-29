@@ -33,6 +33,7 @@ let initWebRoutes = (app) => {
 
         userController.registerCustomer,
     );
+    router.post('/api/loginCustomer', authController.handleCustomerLogin);
 
     //refreshToken
 
@@ -149,6 +150,11 @@ let initWebRoutes = (app) => {
 
         productController.handleReviewProduct,
     );
+    router.post('/api/add-product-to-cart', productController.handleAddProductToCart);
+    //coupon
+    router.post('/api/add-coupon', productController.handleAddCoupon);
+    router.put('/api/update-coupon', productController.handleUpdateCoupon);
+    router.get('/api/search-coupon', productController.handleSearchCoupon);
 
     //customer
 
@@ -157,6 +163,8 @@ let initWebRoutes = (app) => {
 
         productController.getAllCategory,
     );
+
+    router.post('/api/create-order', productController.handleCreateOrder);
 
     //test api search
     router.get('/api/search-product', productController.handleSearchProduct);

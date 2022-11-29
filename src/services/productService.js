@@ -849,6 +849,243 @@ const handleSearchProduct = (q) => {
     });
 };
 
+const handleAddProductToCart = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let res = await db.Cart.findOne({
+                where: { product_id: data.product_id },
+            });
+
+            let quantityProduct = await db.Product.findOne({
+                where: { id: data.product_id },
+            });
+
+            if (data.quantity > quantityProduct.stock) {
+                resolve({
+                    errCode: 1,
+                    errMessage: `Chỉ còn lại ${quantityProduct.stock} sản phẩm trong cửa hàng!!!`,
+                });
+            } else {
+                if (!res) {
+                    await db.Cart.create({
+                        product_id: data.product_id,
+                        user_id: data.user_id,
+                        quantity: data.quantity,
+                    });
+                    resolve({
+                        errCode: 0,
+                        errMessage: 'Add product successfully',
+                    });
+                } else {
+                    if (data.quantity === 0) {
+                        await db.Cart.destroy({
+                            where: { product_id: data.product_id, user_id: data.user_id },
+                        });
+                    }
+                    await db.Cart.update(
+                        {
+                            quantity: data.quantity,
+                        },
+                        {
+                            where: { product_id: data.product_id, user_id: data.user_id },
+                        },
+                    );
+                    resolve({
+                        errCode: 0,
+                        errMessage: 'Update quantity product successfully',
+                    });
+                }
+            }
+        } catch (e) {
+            console.log(e);
+            reject(e);
+        }
+    });
+};
+
+const handleAddCoupon = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const res = await db.Coupon.findOne({
+                where: { code: data.code },
+            });
+            console.log(res);
+            if (res) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'coupon is exitsaaa',
+                });
+            } else {
+                await db.Coupon.create({
+                    code: data.code,
+                    value: data.value,
+                    status: data.status,
+                    stock: data.stock,
+                });
+                resolve({
+                    errCode: 0,
+                    errMessage: 'Add coupon successfully!!!',
+                });
+            }
+        } catch (e) {
+            console.log(e);
+            reject(e);
+        }
+    });
+};
+const handleUpdateCoupon = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const res = db.Coupon.findOne({
+                where: { code: data.code },
+            });
+            if (!res) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'coupon is not exits',
+                });
+            } else {
+                await db.Coupon.update(
+                    {
+                        code: data.code,
+                        value: data.value,
+                        status: data.status,
+                        stock: data.stock,
+                    },
+                    {
+                        where: { id: data.id },
+                    },
+                );
+                resolve({
+                    errCode: 1,
+                    errMessage: 'coupon is exits',
+                });
+            }
+        } catch (e) {
+            console.log(e);
+            reject(e);
+        }
+    });
+};
+const handleSearchCoupon = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const res = await db.Coupon.findOne({
+                where: { code: data },
+            });
+            console.log('check res', res);
+            if (!res) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'coupon is not exits',
+                });
+            } else {
+                resolve({
+                    errCode: 0,
+                    data: res,
+                });
+            }
+        } catch (e) {
+            console.log(e);
+            reject(e);
+        }
+    });
+};
+const handleCreateOrder = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (data.action === 'new') {
+                let user = await db.User.findOne({
+                    where: { id: data.user_id },
+                });
+                if (user) {
+                    await db.User.update(
+                        {
+                            firstName: data.firstName,
+                            lastName: data.lastName,
+                            email: data.email,
+                            address: data.address,
+                            phonenumber: data.phonenumber,
+                        },
+                        {
+                            where: { id: data.user_id },
+                        },
+                    );
+                } else {
+                    resolve({
+                        errCode: 3,
+                        errMessage: 'Không tìm thấy người dùng!!!',
+                    });
+                }
+            }
+            let res = await db.Order.create({
+                user_id: data.user_id,
+                order_number: data.order_number,
+                coupon: data.coupon,
+                sub_total: data.sub_total,
+                quantity: data.quantity,
+                lastName: data.lastName,
+                firstName: data.firstName,
+                address: data.address,
+                phonenumber: data.phonenumber,
+                email: data.email,
+                status: data.status,
+            });
+
+            let arr = [];
+            data.product.map((item) => {
+                let obj = {};
+
+                obj.product_id = item.product_id;
+                obj.quantity = item.quantity;
+                obj.order_id = res.id;
+
+                return arr.push(obj);
+            });
+            await db.ProductOrder.bulkCreate(arr);
+            arr.forEach(async (item) => {
+                let prod = await db.Product.findOne({
+                    where: { id: item.product_id },
+                });
+                if (prod) {
+                    await db.Product.update(
+                        {
+                            sold: prod.sold ? prod.sold + item.quantity : item.quantity,
+                            stock: prod.stock - item.quantity,
+                        },
+                        {
+                            where: { id: item.product_id },
+                        },
+                    );
+                }
+            });
+            let coup = await db.Coupon.findOne({
+                where: { code: data.coupon },
+            });
+            if (coup) {
+                await db.Coupon.update(
+                    {
+                        stock: coup.stock - 1,
+                    },
+                    {
+                        where: { id: coup.id },
+                    },
+                );
+            }
+
+            await db.Cart.destroy({
+                where: { user_id: data.user_id },
+            });
+            resolve({
+                errCode: 0,
+                errMessage: 'Đặt hàng thành công !!!',
+            });
+        } catch (e) {
+            console.log(e);
+            reject(e);
+        }
+    });
+};
 module.exports = {
     createNewBrand,
     getAllBrands,
@@ -868,4 +1105,9 @@ module.exports = {
     handleSearchProduct,
     getAllProductHome,
     handleReviewProduct,
+    handleAddProductToCart,
+    handleAddCoupon,
+    handleUpdateCoupon,
+    handleSearchCoupon,
+    handleCreateOrder,
 };
