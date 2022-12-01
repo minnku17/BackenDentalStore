@@ -16,6 +16,10 @@ module.exports = (sequelize, DataTypes) => {
             Image.belongsTo(models.Product, {
                 foreignKey: 'product_id',
             });
+
+            Image.hasMany(models.ProductOrder, {
+                foreignKey: 'product_id',
+            });
         }
     }
     Image.init(

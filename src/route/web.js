@@ -3,6 +3,7 @@ import homeController from '../controller/homeController';
 import userController from '../controller/userController';
 import authController from '../controller/authController';
 import productController from '../controller/productController';
+import orderController from '../controller/orderController';
 import middlewareController from '../controller/middlewareController';
 let router = express.Router();
 
@@ -164,7 +165,12 @@ let initWebRoutes = (app) => {
         productController.getAllCategory,
     );
 
+    //order
+
     router.post('/api/create-order', productController.handleCreateOrder);
+    router.get('/api/getAllOrderNew', orderController.handleGetAllOrderNew);
+    router.get('/api/getDetailOrder', orderController.handleGetDetailOrder);
+    router.put('/api/handleEditStatus', orderController.handleEditStatus);
 
     //test api search
     router.get('/api/search-product', productController.handleSearchProduct);

@@ -9,6 +9,10 @@ module.exports = (sequelize, DataTypes) => {
          */
         static associate(models) {
             // define association here
+
+            Order.hasMany(models.ProductOrder, {
+                foreignKey: 'order_id',
+            });
         }
     }
     Order.init(
@@ -24,9 +28,8 @@ module.exports = (sequelize, DataTypes) => {
             address: DataTypes.STRING,
             phonenumber: DataTypes.STRING,
             email: DataTypes.STRING,
+            note: DataTypes.STRING,
             status: DataTypes.STRING,
-            positionId: DataTypes.STRING,
-            rememberToken: DataTypes.STRING,
         },
         {
             sequelize,

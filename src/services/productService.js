@@ -973,7 +973,6 @@ const handleSearchCoupon = (data) => {
             const res = await db.Coupon.findOne({
                 where: { code: data },
             });
-            console.log('check res', res);
             if (!res) {
                 resolve({
                     errCode: 1,
@@ -1028,6 +1027,7 @@ const handleCreateOrder = (data) => {
                 firstName: data.firstName,
                 address: data.address,
                 phonenumber: data.phonenumber,
+                note: data.note,
                 email: data.email,
                 status: data.status,
             });
@@ -1086,6 +1086,22 @@ const handleCreateOrder = (data) => {
         }
     });
 };
+const handleGetAllOrderNew = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let res = await db.Order.findAll({
+                where: { status: 'new' },
+            });
+            resolve({
+                errCode: 0,
+                data: res,
+            });
+        } catch (e) {
+            console.log('check ', e);
+            reject(e);
+        }
+    });
+};
 module.exports = {
     createNewBrand,
     getAllBrands,
@@ -1110,4 +1126,5 @@ module.exports = {
     handleUpdateCoupon,
     handleSearchCoupon,
     handleCreateOrder,
+    handleGetAllOrderNew,
 };
