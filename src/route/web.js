@@ -164,13 +164,23 @@ let initWebRoutes = (app) => {
 
         productController.getAllCategory,
     );
+    router.get(
+        '/api/getProductByCategory',
+
+        productController.getProductByCategory,
+    );
 
     //order
 
     router.post('/api/create-order', productController.handleCreateOrder);
     router.get('/api/getAllOrderNew', orderController.handleGetAllOrderNew);
     router.get('/api/getDetailOrder', orderController.handleGetDetailOrder);
-    router.put('/api/handleEditStatus', orderController.handleEditStatus);
+    router.put(
+        '/api/handleEditStatus',
+        middlewareController.verifyToken,
+        middlewareController.verifyTokenAndAdminAuth,
+        orderController.handleEditStatus,
+    );
 
     //test api search
     router.get('/api/search-product', productController.handleSearchProduct);

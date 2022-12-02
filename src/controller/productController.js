@@ -156,7 +156,17 @@ const getAllProduct = async (req, res) => {
         });
     }
 };
-
+const getProductByCategory = async (req, res) => {
+    try {
+        let response = await productService.getProductByCategory(req.body);
+        return res.status(200).json(response);
+    } catch (e) {
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server...',
+        });
+    }
+};
 const getProductInfoAdminById = async (req, res) => {
     try {
         let response = await productService.getProductInfoAdminById(req.query.id);
@@ -303,4 +313,5 @@ module.exports = {
     handleUpdateCoupon,
     handleSearchCoupon,
     handleCreateOrder,
+    getProductByCategory,
 };
