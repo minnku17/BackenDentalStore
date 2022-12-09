@@ -1,3 +1,4 @@
+import moment from 'moment/moment';
 import db from '../models/index';
 const { Op } = require('sequelize');
 
@@ -48,6 +49,8 @@ const getAllBrands = () => {
     return new Promise(async (resolve, reject) => {
         try {
             let res = await db.Brand.findAll({
+                attributes: ['id', 'title', 'status'],
+
                 include: [
                     {
                         model: db.Image,
@@ -263,28 +266,55 @@ const getAllCategoryAdmin = () => {
         }
     });
 };
-const getAllParentCategory = () => {
+const getAllParentCategory = (limit) => {
     return new Promise(async (resolve, reject) => {
         try {
-            let allCat = await db.Category.findAll({
-                where: { is_parent: 1 },
-                include: [
-                    {
-                        model: db.Image,
-                        attributes: ['photo'],
-                    },
-                ],
-            });
-            allCat.forEach((item) => {
-                if (item.Image.photo) {
-                    item.Image.photo = new Buffer(item.Image.photo, 'base64').toString('binary');
-                }
-            });
+            if (limit) {
+                let allCat = await db.Category.findAll({
+                    limit: +limit,
+                    where: { is_parent: 1 },
+                    attributes: ['id', 'title'],
 
-            resolve({
-                errCode: 0,
-                data: allCat,
-            });
+                    include: [
+                        {
+                            model: db.Image,
+                            attributes: ['photo'],
+                        },
+                    ],
+                });
+                allCat.forEach((item) => {
+                    if (item.Image.photo) {
+                        item.Image.photo = new Buffer(item.Image.photo, 'base64').toString('binary');
+                    }
+                });
+
+                resolve({
+                    errCode: 0,
+                    data: allCat,
+                });
+            } else {
+                let allCat = await db.Category.findAll({
+                    where: { is_parent: 1 },
+                    attributes: ['id', 'title'],
+
+                    include: [
+                        {
+                            model: db.Image,
+                            attributes: ['photo'],
+                        },
+                    ],
+                });
+                allCat.forEach((item) => {
+                    if (item.Image.photo) {
+                        item.Image.photo = new Buffer(item.Image.photo, 'base64').toString('binary');
+                    }
+                });
+
+                resolve({
+                    errCode: 0,
+                    data: allCat,
+                });
+            }
         } catch (error) {
             console.log(error);
             reject(error);
@@ -600,155 +630,46 @@ const getAllProduct = () => {
 const getProductByCategory = (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            console.log('check data', data);
-            // if choose brand and no category
+            //filter brand and hasn't category
             if (data.brand_id && !data.id) {
-                let products = await db.Product.findAll({
-                    where: { brand_id: data.brand_id },
-                });
-                if (products.length > 0) {
-                    //if has price
-                    if (data.priceA) {
-                        if (data.action === 'trend') {
-                            let res = products.filter((item) => {
-                                return (
-                                    item.condition === 'hot' && item.price >= data.priceA && item.price <= data.priceB
-                                );
-                            });
-                            if (res.length > 0) {
-                                resolve({
-                                    errCode: 0,
-                                    data: res,
-                                });
-                            } else {
-                                resolve({
-                                    errCode: 0,
-                                    errMessage: 'Không có sản phẩm cho lựa chọn này!',
-                                });
-                            }
-                        }
-                        if (data.action === 'sold') {
-                            let res = products.filter((item) => {
-                                return item.sold > 30 && item.price >= data.priceA && item.price <= data.priceB;
-                            });
-                            if (res.length > 0) {
-                                resolve({
-                                    errCode: 0,
-                                    data: res,
-                                });
-                            } else {
-                                resolve({
-                                    errCode: 0,
-                                    errMessage: 'Không có sản phẩm cho lựa chọn này!',
-                                });
-                            }
-                        }
-                        if (data.action === 'discount') {
-                            let res = products.filter((item) => {
-                                return item.discount > 30 && item.price >= data.priceA && item.price <= data.priceB;
-                            });
-                            if (res.length > 0) {
-                                resolve({
-                                    errCode: 0,
-                                    data: res,
-                                });
-                            } else {
-                                resolve({
-                                    errCode: 0,
-                                    errMessage: 'Không có sản phẩm cho lựa chọn này!',
-                                });
-                            }
-                        }
-                        if (data.action === 'priceLow') {
-                            let res = products.filter((item) => {
-                                return item.price < 100000 && item.price >= data.priceA && item.price <= data.priceB;
-                            });
-                            if (res.length > 0) {
-                                resolve({
-                                    errCode: 0,
-                                    data: res,
-                                });
-                            } else {
-                                resolve({
-                                    errCode: 0,
-                                    errMessage: 'Không có sản phẩm cho lựa chọn này!',
-                                });
-                            }
-                        }
-                        if (data.action === 'priceHigh') {
-                            let res = products.filter((item) => {
-                                return item.price > 20000000 && item.price >= data.priceA && item.price <= data.priceB;
-                            });
-                            if (res.length > 0) {
-                                resolve({
-                                    errCode: 0,
-                                    data: res,
-                                });
-                            } else {
-                                resolve({
-                                    errCode: 0,
-                                    errMessage: 'Không có sản phẩm cho lựa chọn này!',
-                                });
-                            }
-                        }
-                    } else {
-                        //if has not price
-                        if (data.action === 'trend') {
-                            let res = products.filter((item) => {
-                                return item.condition === 'hot';
-                            });
-                            if (res.length > 0) {
-                                resolve({
-                                    errCode: 0,
-                                    data: res,
-                                });
-                            } else {
-                                resolve({
-                                    errCode: 0,
-                                    errMessage: 'Không có sản phẩm cho lựa chọn này!',
-                                });
-                            }
-                        } else if (data.action === 'sold') {
-                            let res = products.filter((item) => {
-                                return item.sold > 30;
-                            });
-                            if (res.length > 0) {
-                                resolve({
-                                    errCode: 0,
-                                    data: res,
-                                });
-                            } else {
-                                resolve({
-                                    errCode: 0,
-                                    errMessage: 'Không có sản phẩm cho lựa chọn này!',
-                                });
-                            }
-                        } else if (data.action === 'discount') {
-                            let res = products.filter((item) => {
-                                return item.discount > 30;
-                            });
-                            if (res.length > 0) {
-                                resolve({
-                                    errCode: 0,
-                                    data: res,
-                                });
-                            } else {
-                                resolve({
-                                    errCode: 0,
-                                    errMessage: 'Không có sản phẩm cho lựa chọn này!',
-                                });
-                            }
-                        } else if (data.action === 'priceLow') {
-                            let res = products.filter((item) => {
-                                return item.price < 100000;
-                            });
-                            resolve({
-                                errCode: 0,
-                                data: res,
-                            });
-                        } else if (data.action === 'priceHigh') {
-                            let res = products.filter((item) => {
-                                return item.price > 20000000;
+                //filter with range price
+                if (data.priceA) {
+                    if (data.action === 'trend') {
+                        let res = await db.Product.findAll({
+                            where: {
+                                brand_id: data.brand_id,
+                                condition: 'hot',
+                                [Op.and]: [
+                                    {
+                                        price: {
+                                            [Op.between]: [data.priceA, data.priceB],
+                                        },
+                                    },
+                                ],
+                            },
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'status'],
+                            },
+                            include: [
+                                {
+                                    model: db.Image,
+                                    attributes: ['photo'],
+                                },
+                                {
+                                    model: db.Brand,
+                                    attributes: ['title'],
+                                },
+                                {
+                                    model: db.Review,
+                                    attributes: ['rate'],
+                                },
+                            ],
+                        });
+                        if (res.length > 0) {
+                            res.forEach((item) => {
+                                return (item.Images[0].photo = new Buffer(item.Images[0].photo, 'base64').toString(
+                                    'binary',
+                                ));
                             });
                             resolve({
                                 errCode: 0,
@@ -756,167 +677,51 @@ const getProductByCategory = (data) => {
                             });
                         } else {
                             resolve({
-                                errCode: 1,
+                                errCode: 0,
                                 errMessage: 'Không có sản phẩm cho lựa chọn này!',
                             });
                         }
-                    }
-                } else {
-                    resolve({
-                        errCode: 1,
-                        errMessage: 'Danh mục này chưa có sản phẩm!',
-                    });
-                }
-                // if choose category and no brand
-                // if choose brand and no category
-            } else if (data.id && !data.brand_id) {
-                let products = await db.Product.findAll({
-                    where: { cat_id: data.id },
-                });
-                if (products.length > 0) {
-                    //If choose brand and no filter price
-                    if (data.priceA) {
-                        if (data.action === 'trend') {
-                            let res = products.filter((item) => {
-                                return (
-                                    item.condition === 'hot' && item.price >= data.priceA && item.price <= data.priceB
-                                );
-                            });
-                            if (res.length > 0) {
-                                resolve({
-                                    errCode: 0,
-                                    data: res,
-                                });
-                            } else {
-                                console.log('check casse');
+                    } else if (data.action === 'sold') {
+                        let res = await db.Product.findAll({
+                            where: {
+                                brand_id: data.brand_id,
 
-                                resolve({
-                                    errCode: 0,
-                                    errMessage: 'Không có sản phẩm cho lựa chọn này!',
-                                });
-                            }
-                        }
-                        if (data.action === 'sold') {
-                            let res = products.filter((item) => {
-                                return item.sold > 30 && item.price >= data.priceA && item.price <= data.priceB;
-                            });
-                            if (res.length > 0) {
-                                resolve({
-                                    errCode: 0,
-                                    data: res,
-                                });
-                            } else {
-                                resolve({
-                                    errCode: 0,
-                                    errMessage: 'Không có sản phẩm cho lựa chọn này!',
-                                });
-                            }
-                        }
-                        if (data.action === 'discount') {
-                            let res = products.filter((item) => {
-                                return item.discount > 30 && item.price >= data.priceA && item.price <= data.priceB;
-                            });
-                            if (res.length > 0) {
-                                resolve({
-                                    errCode: 0,
-                                    data: res,
-                                });
-                            } else {
-                                resolve({
-                                    errCode: 0,
-                                    errMessage: 'Không có sản phẩm cho lựa chọn này!',
-                                });
-                            }
-                        }
-                        if (data.action === 'priceLow') {
-                            let res = products.filter((item) => {
-                                return item.price < 100000 && item.price >= data.priceA && item.price <= data.priceB;
-                            });
-                            if (res.length > 0) {
-                                resolve({
-                                    errCode: 0,
-                                    data: res,
-                                });
-                            } else {
-                                resolve({
-                                    errCode: 0,
-                                    errMessage: 'Không có sản phẩm cho lựa chọn này!',
-                                });
-                            }
-                        }
-                        if (data.action === 'priceHigh') {
-                            let res = products.filter((item) => {
-                                return item.price > 20000000 && item.price >= data.priceA && item.price <= data.priceB;
-                            });
-                            if (res.length > 0) {
-                                resolve({
-                                    errCode: 0,
-                                    data: res,
-                                });
-                            } else {
-                                resolve({
-                                    errCode: 0,
-                                    errMessage: 'Không có sản phẩm cho lựa chọn này!',
-                                });
-                            }
-                        }
-                    } else {
-                        if (data.action === 'trend') {
-                            let res = products.filter((item) => {
-                                return item.condition === 'hot';
-                            });
-                            if (res.length > 0) {
-                                resolve({
-                                    errCode: 0,
-                                    data: res,
-                                });
-                            } else {
-                                resolve({
-                                    errCode: 0,
-                                    errMessage: 'Không có sản phẩm cho lựa chọn này!',
-                                });
-                            }
-                        } else if (data.action === 'sold') {
-                            let res = products.filter((item) => {
-                                return item.sold > 30;
-                            });
-                            if (res.length > 0) {
-                                resolve({
-                                    errCode: 0,
-                                    data: res,
-                                });
-                            } else {
-                                resolve({
-                                    errCode: 0,
-                                    errMessage: 'Không có sản phẩm cho lựa chọn này!',
-                                });
-                            }
-                        } else if (data.action === 'discount') {
-                            let res = products.filter((item) => {
-                                return item.discount > 30;
-                            });
-                            if (res.length > 0) {
-                                resolve({
-                                    errCode: 0,
-                                    data: res,
-                                });
-                            } else {
-                                resolve({
-                                    errCode: 0,
-                                    errMessage: 'Không có sản phẩm cho lựa chọn này!',
-                                });
-                            }
-                        } else if (data.action === 'priceLow') {
-                            let res = products.filter((item) => {
-                                return item.price < 100000;
-                            });
-                            resolve({
-                                errCode: 0,
-                                data: res,
-                            });
-                        } else if (data.action === 'priceHigh') {
-                            let res = products.filter((item) => {
-                                return item.price > 20000000;
+                                [Op.and]: [
+                                    {
+                                        sold: {
+                                            [Op.gt]: 30,
+                                        },
+                                    },
+                                    {
+                                        price: {
+                                            [Op.between]: [data.priceA, data.priceB],
+                                        },
+                                    },
+                                ],
+                            },
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'status'],
+                            },
+                            include: [
+                                {
+                                    model: db.Image,
+                                    attributes: ['photo'],
+                                },
+                                {
+                                    model: db.Brand,
+                                    attributes: ['title'],
+                                },
+                                {
+                                    model: db.Review,
+                                    attributes: ['rate'],
+                                },
+                            ],
+                        });
+                        if (res.length > 0) {
+                            res.forEach((item) => {
+                                return (item.Images[0].photo = new Buffer(item.Images[0].photo, 'base64').toString(
+                                    'binary',
+                                ));
                             });
                             resolve({
                                 errCode: 0,
@@ -924,183 +729,1396 @@ const getProductByCategory = (data) => {
                             });
                         } else {
                             resolve({
-                                errCode: 1,
+                                errCode: 0,
+                                errMessage: 'Không có sản phẩm cho lựa chọn này!',
+                            });
+                        }
+                    } else if (data.action === 'discount') {
+                        let res = await db.Product.findAll({
+                            where: {
+                                brand_id: data.brand_id,
+
+                                [Op.and]: [
+                                    {
+                                        discount: {
+                                            [Op.gt]: 30,
+                                        },
+                                    },
+                                    {
+                                        price: {
+                                            [Op.between]: [data.priceA, data.priceB],
+                                        },
+                                    },
+                                ],
+                            },
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'status'],
+                            },
+                            include: [
+                                {
+                                    model: db.Image,
+                                    attributes: ['photo'],
+                                },
+                                {
+                                    model: db.Brand,
+                                    attributes: ['title'],
+                                },
+                                {
+                                    model: db.Review,
+                                    attributes: ['rate'],
+                                },
+                            ],
+                        });
+                        if (res.length > 0) {
+                            res.forEach((item) => {
+                                return (item.Images[0].photo = new Buffer(item.Images[0].photo, 'base64').toString(
+                                    'binary',
+                                ));
+                            });
+                            resolve({
+                                errCode: 0,
+                                data: res,
+                            });
+                        } else {
+                            resolve({
+                                errCode: 0,
+                                errMessage: 'Không có sản phẩm cho lựa chọn này!',
+                            });
+                        }
+                    } else if (data.action === 'priceLow') {
+                        let res = await db.Product.findAll({
+                            where: {
+                                brand_id: data.brand_id,
+
+                                [Op.and]: [
+                                    {
+                                        price: {
+                                            [Op.lt]: 120000,
+                                        },
+                                    },
+                                    {
+                                        price: {
+                                            [Op.between]: [data.priceA, data.priceB],
+                                        },
+                                    },
+                                ],
+                            },
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'status'],
+                            },
+                            include: [
+                                {
+                                    model: db.Image,
+                                    attributes: ['photo'],
+                                },
+                                {
+                                    model: db.Brand,
+                                    attributes: ['title'],
+                                },
+                                {
+                                    model: db.Review,
+                                    attributes: ['rate'],
+                                },
+                            ],
+                        });
+                        if (res.length > 0) {
+                            res.forEach((item) => {
+                                return (item.Images[0].photo = new Buffer(item.Images[0].photo, 'base64').toString(
+                                    'binary',
+                                ));
+                            });
+                            resolve({
+                                errCode: 0,
+                                data: res,
+                            });
+                        } else {
+                            resolve({
+                                errCode: 0,
+                                errMessage: 'Không có sản phẩm cho lựa chọn này!',
+                            });
+                        }
+                    } else if (data.action === 'priceHigh') {
+                        let res = await db.Product.findAll({
+                            where: {
+                                brand_id: data.brand_id,
+
+                                [Op.and]: [
+                                    {
+                                        price: {
+                                            [Op.gt]: 2000000,
+                                        },
+                                    },
+                                    {
+                                        price: {
+                                            [Op.between]: [data.priceA, data.priceB],
+                                        },
+                                    },
+                                ],
+                            },
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'status'],
+                            },
+                            include: [
+                                {
+                                    model: db.Image,
+                                    attributes: ['photo'],
+                                },
+                                {
+                                    model: db.Brand,
+                                    attributes: ['title'],
+                                },
+                                {
+                                    model: db.Review,
+                                    attributes: ['rate'],
+                                },
+                            ],
+                        });
+                        if (res.length > 0) {
+                            res.forEach((item) => {
+                                return (item.Images[0].photo = new Buffer(item.Images[0].photo, 'base64').toString(
+                                    'binary',
+                                ));
+                            });
+                            resolve({
+                                errCode: 0,
+                                data: res,
+                            });
+                        } else {
+                            resolve({
+                                errCode: 0,
                                 errMessage: 'Không có sản phẩm cho lựa chọn này!',
                             });
                         }
                     }
                 } else {
-                    resolve({
-                        errCode: 1,
-                        errMessage: 'Danh mục này chưa có sản phẩm!',
-                    });
+                    //filter hasn't range price
+                    if (data.action === 'trend') {
+                        let res = await db.Product.findAll({
+                            where: {
+                                brand_id: data.brand_id,
+                                condition: 'hot',
+                            },
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'status'],
+                            },
+                            include: [
+                                {
+                                    model: db.Image,
+                                    attributes: ['photo'],
+                                },
+                                {
+                                    model: db.Brand,
+                                    attributes: ['title'],
+                                },
+                                {
+                                    model: db.Review,
+                                    attributes: ['rate'],
+                                },
+                            ],
+                        });
+                        if (res.length > 0) {
+                            res.forEach((item) => {
+                                return (item.Images[0].photo = new Buffer(item.Images[0].photo, 'base64').toString(
+                                    'binary',
+                                ));
+                            });
+                            resolve({
+                                errCode: 0,
+                                data: res,
+                            });
+                        } else {
+                            resolve({
+                                errCode: 0,
+                                errMessage: 'Không có sản phẩm cho lựa chọn này!',
+                            });
+                        }
+                    } else if (data.action === 'sold') {
+                        let res = await db.Product.findAll({
+                            where: {
+                                brand_id: data.brand_id,
+
+                                [Op.and]: [
+                                    {
+                                        sold: {
+                                            [Op.gt]: 30,
+                                        },
+                                    },
+                                ],
+                            },
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'status'],
+                            },
+                            include: [
+                                {
+                                    model: db.Image,
+                                    attributes: ['photo'],
+                                },
+                                {
+                                    model: db.Brand,
+                                    attributes: ['title'],
+                                },
+                                {
+                                    model: db.Review,
+                                    attributes: ['rate'],
+                                },
+                            ],
+                        });
+                        if (res.length > 0) {
+                            res.forEach((item) => {
+                                return (item.Images[0].photo = new Buffer(item.Images[0].photo, 'base64').toString(
+                                    'binary',
+                                ));
+                            });
+                            resolve({
+                                errCode: 0,
+                                data: res,
+                            });
+                        } else {
+                            resolve({
+                                errCode: 0,
+                                errMessage: 'Không có sản phẩm cho lựa chọn này!',
+                            });
+                        }
+                    } else if (data.action === 'discount') {
+                        let res = await db.Product.findAll({
+                            where: {
+                                brand_id: data.brand_id,
+
+                                [Op.and]: [
+                                    {
+                                        discount: {
+                                            [Op.gt]: 30,
+                                        },
+                                    },
+                                ],
+                            },
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'status'],
+                            },
+                            include: [
+                                {
+                                    model: db.Image,
+                                    attributes: ['photo'],
+                                },
+                                {
+                                    model: db.Brand,
+                                    attributes: ['title'],
+                                },
+                                {
+                                    model: db.Review,
+                                    attributes: ['rate'],
+                                },
+                            ],
+                        });
+                        if (res.length > 0) {
+                            res.forEach((item) => {
+                                return (item.Images[0].photo = new Buffer(item.Images[0].photo, 'base64').toString(
+                                    'binary',
+                                ));
+                            });
+                            resolve({
+                                errCode: 0,
+                                data: res,
+                            });
+                        } else {
+                            resolve({
+                                errCode: 0,
+                                errMessage: 'Không có sản phẩm cho lựa chọn này!',
+                            });
+                        }
+                    } else if (data.action === 'priceLow') {
+                        let res = await db.Product.findAll({
+                            where: {
+                                brand_id: data.brand_id,
+
+                                [Op.and]: [
+                                    {
+                                        price: {
+                                            [Op.lt]: 120000,
+                                        },
+                                    },
+                                ],
+                            },
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'status'],
+                            },
+                            include: [
+                                {
+                                    model: db.Image,
+                                    attributes: ['photo'],
+                                },
+                                {
+                                    model: db.Brand,
+                                    attributes: ['title'],
+                                },
+                                {
+                                    model: db.Review,
+                                    attributes: ['rate'],
+                                },
+                            ],
+                        });
+                        if (res.length > 0) {
+                            res.forEach((item) => {
+                                return (item.Images[0].photo = new Buffer(item.Images[0].photo, 'base64').toString(
+                                    'binary',
+                                ));
+                            });
+                            resolve({
+                                errCode: 0,
+                                data: res,
+                            });
+                        } else {
+                            resolve({
+                                errCode: 0,
+                                errMessage: 'Không có sản phẩm cho lựa chọn này!',
+                            });
+                        }
+                    } else if (data.action === 'priceHigh') {
+                        let res = await db.Product.findAll({
+                            where: {
+                                brand_id: data.brand_id,
+
+                                [Op.and]: [
+                                    {
+                                        price: {
+                                            [Op.gt]: 2000000,
+                                        },
+                                    },
+                                ],
+                            },
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'status'],
+                            },
+                            include: [
+                                {
+                                    model: db.Image,
+                                    attributes: ['photo'],
+                                },
+                                {
+                                    model: db.Brand,
+                                    attributes: ['title'],
+                                },
+                                {
+                                    model: db.Review,
+                                    attributes: ['rate'],
+                                },
+                            ],
+                        });
+                        if (res.length > 0) {
+                            res.forEach((item) => {
+                                return (item.Images[0].photo = new Buffer(item.Images[0].photo, 'base64').toString(
+                                    'binary',
+                                ));
+                            });
+                            resolve({
+                                errCode: 0,
+                                data: res,
+                            });
+                        } else {
+                            resolve({
+                                errCode: 0,
+                                errMessage: 'Không có sản phẩm cho lựa chọn này!',
+                            });
+                        }
+                    }
+                }
+            } else if (data.id && !data.brand_id) {
+                //filter category and hasn't brand
+                //filter range price
+                if (data.priceA) {
+                    if (data.action === 'trend') {
+                        let res = await db.Product.findAll({
+                            where: {
+                                cat_id: data.id,
+                                condition: 'hot',
+                                [Op.and]: [
+                                    {
+                                        price: {
+                                            [Op.between]: [data.priceA, data.priceB],
+                                        },
+                                    },
+                                ],
+                            },
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'status'],
+                            },
+                            include: [
+                                {
+                                    model: db.Image,
+                                    attributes: ['photo'],
+                                },
+                                {
+                                    model: db.Brand,
+                                    attributes: ['title'],
+                                },
+                                {
+                                    model: db.Review,
+                                    attributes: ['rate'],
+                                },
+                            ],
+                        });
+                        if (res.length > 0) {
+                            res.forEach((item) => {
+                                return (item.Images[0].photo = new Buffer(item.Images[0].photo, 'base64').toString(
+                                    'binary',
+                                ));
+                            });
+                            resolve({
+                                errCode: 0,
+                                data: res,
+                            });
+                        } else {
+                            resolve({
+                                errCode: 0,
+                                errMessage: 'Không có sản phẩm cho lựa chọn này!',
+                            });
+                        }
+                    } else if (data.action === 'sold') {
+                        let res = await db.Product.findAll({
+                            where: {
+                                cat_id: data.id,
+
+                                [Op.and]: [
+                                    {
+                                        sold: {
+                                            [Op.gt]: 30,
+                                        },
+                                    },
+                                    {
+                                        price: {
+                                            [Op.between]: [data.priceA, data.priceB],
+                                        },
+                                    },
+                                ],
+                            },
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'status'],
+                            },
+                            include: [
+                                {
+                                    model: db.Image,
+                                    attributes: ['photo'],
+                                },
+                                {
+                                    model: db.Brand,
+                                    attributes: ['title'],
+                                },
+                                {
+                                    model: db.Review,
+                                    attributes: ['rate'],
+                                },
+                            ],
+                        });
+                        if (res.length > 0) {
+                            res.forEach((item) => {
+                                return (item.Images[0].photo = new Buffer(item.Images[0].photo, 'base64').toString(
+                                    'binary',
+                                ));
+                            });
+                            resolve({
+                                errCode: 0,
+                                data: res,
+                            });
+                        } else {
+                            resolve({
+                                errCode: 0,
+                                errMessage: 'Không có sản phẩm cho lựa chọn này!',
+                            });
+                        }
+                    } else if (data.action === 'discount') {
+                        let res = await db.Product.findAll({
+                            where: {
+                                cat_id: data.id,
+
+                                [Op.and]: [
+                                    {
+                                        discount: {
+                                            [Op.gt]: 30,
+                                        },
+                                    },
+                                    {
+                                        price: {
+                                            [Op.between]: [data.priceA, data.priceB],
+                                        },
+                                    },
+                                ],
+                            },
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'status'],
+                            },
+                            include: [
+                                {
+                                    model: db.Image,
+                                    attributes: ['photo'],
+                                },
+                                {
+                                    model: db.Brand,
+                                    attributes: ['title'],
+                                },
+                                {
+                                    model: db.Review,
+                                    attributes: ['rate'],
+                                },
+                            ],
+                        });
+                        if (res.length > 0) {
+                            res.forEach((item) => {
+                                return (item.Images[0].photo = new Buffer(item.Images[0].photo, 'base64').toString(
+                                    'binary',
+                                ));
+                            });
+                            resolve({
+                                errCode: 0,
+                                data: res,
+                            });
+                        } else {
+                            resolve({
+                                errCode: 0,
+                                errMessage: 'Không có sản phẩm cho lựa chọn này!',
+                            });
+                        }
+                    } else if (data.action === 'priceLow') {
+                        let res = await db.Product.findAll({
+                            where: {
+                                cat_id: data.id,
+
+                                [Op.and]: [
+                                    {
+                                        price: {
+                                            [Op.lt]: 120000,
+                                        },
+                                    },
+                                    {
+                                        price: {
+                                            [Op.between]: [data.priceA, data.priceB],
+                                        },
+                                    },
+                                ],
+                            },
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'status'],
+                            },
+                            include: [
+                                {
+                                    model: db.Image,
+                                    attributes: ['photo'],
+                                },
+                                {
+                                    model: db.Brand,
+                                    attributes: ['title'],
+                                },
+                                {
+                                    model: db.Review,
+                                    attributes: ['rate'],
+                                },
+                            ],
+                        });
+                        if (res.length > 0) {
+                            res.forEach((item) => {
+                                return (item.Images[0].photo = new Buffer(item.Images[0].photo, 'base64').toString(
+                                    'binary',
+                                ));
+                            });
+                            resolve({
+                                errCode: 0,
+                                data: res,
+                            });
+                        } else {
+                            resolve({
+                                errCode: 0,
+                                errMessage: 'Không có sản phẩm cho lựa chọn này!',
+                            });
+                        }
+                    } else if (data.action === 'priceHigh') {
+                        let res = await db.Product.findAll({
+                            where: {
+                                cat_id: data.id,
+
+                                [Op.and]: [
+                                    {
+                                        price: {
+                                            [Op.gt]: 2000000,
+                                        },
+                                    },
+                                    {
+                                        price: {
+                                            [Op.between]: [data.priceA, data.priceB],
+                                        },
+                                    },
+                                ],
+                            },
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'status'],
+                            },
+                            include: [
+                                {
+                                    model: db.Image,
+                                    attributes: ['photo'],
+                                },
+                                {
+                                    model: db.Brand,
+                                    attributes: ['title'],
+                                },
+                                {
+                                    model: db.Review,
+                                    attributes: ['rate'],
+                                },
+                            ],
+                        });
+                        if (res.length > 0) {
+                            res.forEach((item) => {
+                                return (item.Images[0].photo = new Buffer(item.Images[0].photo, 'base64').toString(
+                                    'binary',
+                                ));
+                            });
+                            resolve({
+                                errCode: 0,
+                                data: res,
+                            });
+                        } else {
+                            resolve({
+                                errCode: 0,
+                                errMessage: 'Không có sản phẩm cho lựa chọn này!',
+                            });
+                        }
+                    }
+                } else {
+                    //filter hasn't range price
+                    if (data.action === 'trend') {
+                        let res = await db.Product.findAll({
+                            where: {
+                                cat_id: data.id,
+                                condition: 'hot',
+                            },
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'status'],
+                            },
+                            include: [
+                                {
+                                    model: db.Image,
+                                    attributes: ['photo'],
+                                },
+                                {
+                                    model: db.Brand,
+                                    attributes: ['title'],
+                                },
+                                {
+                                    model: db.Review,
+                                    attributes: ['rate'],
+                                },
+                            ],
+                        });
+                        if (res.length > 0) {
+                            res.forEach((item) => {
+                                return (item.Images[0].photo = new Buffer(item.Images[0].photo, 'base64').toString(
+                                    'binary',
+                                ));
+                            });
+                            resolve({
+                                errCode: 0,
+                                data: res,
+                            });
+                        } else {
+                            resolve({
+                                errCode: 0,
+                                errMessage: 'Không có sản phẩm cho lựa chọn này!',
+                            });
+                        }
+                    } else if (data.action === 'sold') {
+                        let res = await db.Product.findAll({
+                            where: {
+                                cat_id: data.id,
+
+                                [Op.and]: [
+                                    {
+                                        sold: {
+                                            [Op.gt]: 30,
+                                        },
+                                    },
+                                ],
+                            },
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'status'],
+                            },
+                            include: [
+                                {
+                                    model: db.Image,
+                                    attributes: ['photo'],
+                                },
+                                {
+                                    model: db.Brand,
+                                    attributes: ['title'],
+                                },
+                                {
+                                    model: db.Review,
+                                    attributes: ['rate'],
+                                },
+                            ],
+                        });
+                        if (res.length > 0) {
+                            res.forEach((item) => {
+                                return (item.Images[0].photo = new Buffer(item.Images[0].photo, 'base64').toString(
+                                    'binary',
+                                ));
+                            });
+                            resolve({
+                                errCode: 0,
+                                data: res,
+                            });
+                        } else {
+                            resolve({
+                                errCode: 0,
+                                errMessage: 'Không có sản phẩm cho lựa chọn này!',
+                            });
+                        }
+                    } else if (data.action === 'discount') {
+                        let res = await db.Product.findAll({
+                            where: {
+                                cat_id: data.id,
+
+                                [Op.and]: [
+                                    {
+                                        discount: {
+                                            [Op.gt]: 30,
+                                        },
+                                    },
+                                ],
+                            },
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'status'],
+                            },
+                            include: [
+                                {
+                                    model: db.Image,
+                                    attributes: ['photo'],
+                                },
+                                {
+                                    model: db.Brand,
+                                    attributes: ['title'],
+                                },
+                                {
+                                    model: db.Review,
+                                    attributes: ['rate'],
+                                },
+                            ],
+                        });
+                        if (res.length > 0) {
+                            res.forEach((item) => {
+                                return (item.Images[0].photo = new Buffer(item.Images[0].photo, 'base64').toString(
+                                    'binary',
+                                ));
+                            });
+                            resolve({
+                                errCode: 0,
+                                data: res,
+                            });
+                        } else {
+                            resolve({
+                                errCode: 0,
+                                errMessage: 'Không có sản phẩm cho lựa chọn này!',
+                            });
+                        }
+                    } else if (data.action === 'priceLow') {
+                        let res = await db.Product.findAll({
+                            where: {
+                                cat_id: data.id,
+
+                                [Op.and]: [
+                                    {
+                                        price: {
+                                            [Op.lt]: 120000,
+                                        },
+                                    },
+                                ],
+                            },
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'status'],
+                            },
+                            include: [
+                                {
+                                    model: db.Image,
+                                    attributes: ['photo'],
+                                },
+                                {
+                                    model: db.Brand,
+                                    attributes: ['title'],
+                                },
+                                {
+                                    model: db.Review,
+                                    attributes: ['rate'],
+                                },
+                            ],
+                        });
+                        if (res.length > 0) {
+                            res.forEach((item) => {
+                                return (item.Images[0].photo = new Buffer(item.Images[0].photo, 'base64').toString(
+                                    'binary',
+                                ));
+                            });
+                            resolve({
+                                errCode: 0,
+                                data: res,
+                            });
+                        } else {
+                            resolve({
+                                errCode: 0,
+                                errMessage: 'Không có sản phẩm cho lựa chọn này!',
+                            });
+                        }
+                    } else if (data.action === 'priceHigh') {
+                        let res = await db.Product.findAll({
+                            where: {
+                                cat_id: data.id,
+
+                                [Op.and]: [
+                                    {
+                                        price: {
+                                            [Op.gt]: 2000000,
+                                        },
+                                    },
+                                ],
+                            },
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'status'],
+                            },
+                            include: [
+                                {
+                                    model: db.Image,
+                                    attributes: ['photo'],
+                                },
+                                {
+                                    model: db.Brand,
+                                    attributes: ['title'],
+                                },
+                                {
+                                    model: db.Review,
+                                    attributes: ['rate'],
+                                },
+                            ],
+                        });
+                        if (res.length > 0) {
+                            res.forEach((item) => {
+                                return (item.Images[0].photo = new Buffer(item.Images[0].photo, 'base64').toString(
+                                    'binary',
+                                ));
+                            });
+                            resolve({
+                                errCode: 0,
+                                data: res,
+                            });
+                        } else {
+                            resolve({
+                                errCode: 0,
+                                errMessage: 'Không có sản phẩm cho lựa chọn này!',
+                            });
+                        }
+                    }
+                }
+            } else if (data.brand_id && data.id) {
+                if (data.priceA) {
+                    if (data.action === 'trend') {
+                        let res = await db.Product.findAll({
+                            where: {
+                                cat_id: data.id,
+                                brand_id: data.brand_id,
+                                condition: 'hot',
+                                [Op.and]: [
+                                    {
+                                        price: {
+                                            [Op.between]: [data.priceA, data.priceB],
+                                        },
+                                    },
+                                ],
+                            },
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'status'],
+                            },
+                            include: [
+                                {
+                                    model: db.Image,
+                                    attributes: ['photo'],
+                                },
+                                {
+                                    model: db.Brand,
+                                    attributes: ['title'],
+                                },
+                                {
+                                    model: db.Review,
+                                    attributes: ['rate'],
+                                },
+                            ],
+                        });
+                        if (res.length > 0) {
+                            res.forEach((item) => {
+                                return (item.Images[0].photo = new Buffer(item.Images[0].photo, 'base64').toString(
+                                    'binary',
+                                ));
+                            });
+                            resolve({
+                                errCode: 0,
+                                data: res,
+                            });
+                        } else {
+                            resolve({
+                                errCode: 0,
+                                errMessage: 'Không có sản phẩm cho lựa chọn này!',
+                            });
+                        }
+                    } else if (data.action === 'sold') {
+                        let res = await db.Product.findAll({
+                            where: {
+                                cat_id: data.id,
+                                brand_id: data.brand_id,
+
+                                [Op.and]: [
+                                    {
+                                        sold: {
+                                            [Op.gt]: 30,
+                                        },
+                                    },
+                                    {
+                                        price: {
+                                            [Op.between]: [data.priceA, data.priceB],
+                                        },
+                                    },
+                                ],
+                            },
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'status'],
+                            },
+                            include: [
+                                {
+                                    model: db.Image,
+                                    attributes: ['photo'],
+                                },
+                                {
+                                    model: db.Brand,
+                                    attributes: ['title'],
+                                },
+                                {
+                                    model: db.Review,
+                                    attributes: ['rate'],
+                                },
+                            ],
+                        });
+                        if (res.length > 0) {
+                            res.forEach((item) => {
+                                return (item.Images[0].photo = new Buffer(item.Images[0].photo, 'base64').toString(
+                                    'binary',
+                                ));
+                            });
+                            resolve({
+                                errCode: 0,
+                                data: res,
+                            });
+                        } else {
+                            resolve({
+                                errCode: 0,
+                                errMessage: 'Không có sản phẩm cho lựa chọn này!',
+                            });
+                        }
+                    } else if (data.action === 'discount') {
+                        let res = await db.Product.findAll({
+                            where: {
+                                cat_id: data.id,
+                                brand_id: data.brand_id,
+
+                                [Op.and]: [
+                                    {
+                                        discount: {
+                                            [Op.gt]: 30,
+                                        },
+                                    },
+                                    {
+                                        price: {
+                                            [Op.between]: [data.priceA, data.priceB],
+                                        },
+                                    },
+                                ],
+                            },
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'status'],
+                            },
+                            include: [
+                                {
+                                    model: db.Image,
+                                    attributes: ['photo'],
+                                },
+                                {
+                                    model: db.Brand,
+                                    attributes: ['title'],
+                                },
+                                {
+                                    model: db.Review,
+                                    attributes: ['rate'],
+                                },
+                            ],
+                        });
+                        if (res.length > 0) {
+                            res.forEach((item) => {
+                                return (item.Images[0].photo = new Buffer(item.Images[0].photo, 'base64').toString(
+                                    'binary',
+                                ));
+                            });
+                            resolve({
+                                errCode: 0,
+                                data: res,
+                            });
+                        } else {
+                            resolve({
+                                errCode: 0,
+                                errMessage: 'Không có sản phẩm cho lựa chọn này!',
+                            });
+                        }
+                    } else if (data.action === 'priceLow') {
+                        let res = await db.Product.findAll({
+                            where: {
+                                cat_id: data.id,
+                                brand_id: data.brand_id,
+
+                                [Op.and]: [
+                                    {
+                                        price: {
+                                            [Op.lt]: 120000,
+                                        },
+                                    },
+                                    {
+                                        price: {
+                                            [Op.between]: [data.priceA, data.priceB],
+                                        },
+                                    },
+                                ],
+                            },
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'status'],
+                            },
+                            include: [
+                                {
+                                    model: db.Image,
+                                    attributes: ['photo'],
+                                },
+                                {
+                                    model: db.Brand,
+                                    attributes: ['title'],
+                                },
+                                {
+                                    model: db.Review,
+                                    attributes: ['rate'],
+                                },
+                            ],
+                        });
+                        if (res.length > 0) {
+                            res.forEach((item) => {
+                                return (item.Images[0].photo = new Buffer(item.Images[0].photo, 'base64').toString(
+                                    'binary',
+                                ));
+                            });
+                            resolve({
+                                errCode: 0,
+                                data: res,
+                            });
+                        } else {
+                            resolve({
+                                errCode: 0,
+                                errMessage: 'Không có sản phẩm cho lựa chọn này!',
+                            });
+                        }
+                    } else if (data.action === 'priceHigh') {
+                        let res = await db.Product.findAll({
+                            where: {
+                                cat_id: data.id,
+                                brand_id: data.brand_id,
+
+                                [Op.and]: [
+                                    {
+                                        price: {
+                                            [Op.gt]: 2000000,
+                                        },
+                                    },
+                                    {
+                                        price: {
+                                            [Op.between]: [data.priceA, data.priceB],
+                                        },
+                                    },
+                                ],
+                            },
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'status'],
+                            },
+                            include: [
+                                {
+                                    model: db.Image,
+                                    attributes: ['photo'],
+                                },
+                                {
+                                    model: db.Brand,
+                                    attributes: ['title'],
+                                },
+                                {
+                                    model: db.Review,
+                                    attributes: ['rate'],
+                                },
+                            ],
+                        });
+                        if (res.length > 0) {
+                            res.forEach((item) => {
+                                return (item.Images[0].photo = new Buffer(item.Images[0].photo, 'base64').toString(
+                                    'binary',
+                                ));
+                            });
+                            resolve({
+                                errCode: 0,
+                                data: res,
+                            });
+                        } else {
+                            resolve({
+                                errCode: 0,
+                                errMessage: 'Không có sản phẩm cho lựa chọn này!',
+                            });
+                        }
+                    }
+                } else {
+                    //filter hasn't range price
+                    if (data.action === 'trend') {
+                        let res = await db.Product.findAll({
+                            where: {
+                                cat_id: data.id,
+                                brand_id: data.brand_id,
+                                condition: 'hot',
+                            },
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'status'],
+                            },
+                            include: [
+                                {
+                                    model: db.Image,
+                                    attributes: ['photo'],
+                                },
+                                {
+                                    model: db.Brand,
+                                    attributes: ['title'],
+                                },
+                                {
+                                    model: db.Review,
+                                    attributes: ['rate'],
+                                },
+                            ],
+                        });
+                        if (res.length > 0) {
+                            res.forEach((item) => {
+                                return (item.Images[0].photo = new Buffer(item.Images[0].photo, 'base64').toString(
+                                    'binary',
+                                ));
+                            });
+                            resolve({
+                                errCode: 0,
+                                data: res,
+                            });
+                        } else {
+                            resolve({
+                                errCode: 0,
+                                errMessage: 'Không có sản phẩm cho lựa chọn này!',
+                            });
+                        }
+                    } else if (data.action === 'sold') {
+                        let res = await db.Product.findAll({
+                            where: {
+                                cat_id: data.id,
+                                brand_id: data.brand_id,
+
+                                [Op.and]: [
+                                    {
+                                        sold: {
+                                            [Op.gt]: 30,
+                                        },
+                                    },
+                                ],
+                            },
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'status'],
+                            },
+                            include: [
+                                {
+                                    model: db.Image,
+                                    attributes: ['photo'],
+                                },
+                                {
+                                    model: db.Brand,
+                                    attributes: ['title'],
+                                },
+                                {
+                                    model: db.Review,
+                                    attributes: ['rate'],
+                                },
+                            ],
+                        });
+                        if (res.length > 0) {
+                            res.forEach((item) => {
+                                return (item.Images[0].photo = new Buffer(item.Images[0].photo, 'base64').toString(
+                                    'binary',
+                                ));
+                            });
+                            resolve({
+                                errCode: 0,
+                                data: res,
+                            });
+                        } else {
+                            resolve({
+                                errCode: 0,
+                                errMessage: 'Không có sản phẩm cho lựa chọn này!',
+                            });
+                        }
+                    } else if (data.action === 'discount') {
+                        let res = await db.Product.findAll({
+                            where: {
+                                cat_id: data.id,
+                                brand_id: data.brand_id,
+
+                                [Op.and]: [
+                                    {
+                                        discount: {
+                                            [Op.gt]: 30,
+                                        },
+                                    },
+                                ],
+                            },
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'status'],
+                            },
+                            include: [
+                                {
+                                    model: db.Image,
+                                    attributes: ['photo'],
+                                },
+                                {
+                                    model: db.Brand,
+                                    attributes: ['title'],
+                                },
+                                {
+                                    model: db.Review,
+                                    attributes: ['rate'],
+                                },
+                            ],
+                        });
+                        if (res.length > 0) {
+                            res.forEach((item) => {
+                                return (item.Images[0].photo = new Buffer(item.Images[0].photo, 'base64').toString(
+                                    'binary',
+                                ));
+                            });
+                            resolve({
+                                errCode: 0,
+                                data: res,
+                            });
+                        } else {
+                            resolve({
+                                errCode: 0,
+                                errMessage: 'Không có sản phẩm cho lựa chọn này!',
+                            });
+                        }
+                    } else if (data.action === 'priceLow') {
+                        let res = await db.Product.findAll({
+                            where: {
+                                cat_id: data.id,
+                                brand_id: data.brand_id,
+
+                                [Op.and]: [
+                                    {
+                                        price: {
+                                            [Op.lt]: 120000,
+                                        },
+                                    },
+                                ],
+                            },
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'status'],
+                            },
+                            include: [
+                                {
+                                    model: db.Image,
+                                    attributes: ['photo'],
+                                },
+                                {
+                                    model: db.Brand,
+                                    attributes: ['title'],
+                                },
+                                {
+                                    model: db.Review,
+                                    attributes: ['rate'],
+                                },
+                            ],
+                        });
+                        if (res.length > 0) {
+                            res.forEach((item) => {
+                                return (item.Images[0].photo = new Buffer(item.Images[0].photo, 'base64').toString(
+                                    'binary',
+                                ));
+                            });
+                            resolve({
+                                errCode: 0,
+                                data: res,
+                            });
+                        } else {
+                            resolve({
+                                errCode: 0,
+                                errMessage: 'Không có sản phẩm cho lựa chọn này!',
+                            });
+                        }
+                    } else if (data.action === 'priceHigh') {
+                        let res = await db.Product.findAll({
+                            where: {
+                                cat_id: data.id,
+                                brand_id: data.brand_id,
+
+                                [Op.and]: [
+                                    {
+                                        price: {
+                                            [Op.gt]: 2000000,
+                                        },
+                                    },
+                                ],
+                            },
+                            attributes: {
+                                exclude: ['createdAt', 'updatedAt', 'status'],
+                            },
+                            include: [
+                                {
+                                    model: db.Image,
+                                    attributes: ['photo'],
+                                },
+                                {
+                                    model: db.Brand,
+                                    attributes: ['title'],
+                                },
+                                {
+                                    model: db.Review,
+                                    attributes: ['rate'],
+                                },
+                            ],
+                        });
+                        if (res.length > 0) {
+                            res.forEach((item) => {
+                                return (item.Images[0].photo = new Buffer(item.Images[0].photo, 'base64').toString(
+                                    'binary',
+                                ));
+                            });
+                            resolve({
+                                errCode: 0,
+                                data: res,
+                            });
+                        } else {
+                            resolve({
+                                errCode: 0,
+                                errMessage: 'Không có sản phẩm cho lựa chọn này!',
+                            });
+                        }
+                    }
                 }
             } else {
-                let products = await db.Product.findAll({
-                    where: { cat_id: data.id, brand_id: data.brand_id },
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Bạn vui lòng chọn loại danh mục hoặc nhãn hàng để xem các sản phẩm !!!',
                 });
-
-                if (products.length > 0) {
-                    if (data.priceA) {
-                        if (data.action === 'trend') {
-                            let res = products.filter((item) => {
-                                return (
-                                    item.condition === 'hot' && item.price >= data.priceA && item.price <= data.priceB
-                                );
-                            });
-                            if (res.length > 0) {
-                                resolve({
-                                    errCode: 0,
-                                    data: res,
-                                });
-                            } else {
-                                console.log('check casse');
-
-                                resolve({
-                                    errCode: 0,
-                                    errMessage: 'Không có sản phẩm cho lựa chọn này!',
-                                });
-                            }
-                        }
-                        if (data.action === 'sold') {
-                            let res = products.filter((item) => {
-                                return item.sold > 30 && item.price >= data.priceA && item.price <= data.priceB;
-                            });
-                            if (res.length > 0) {
-                                resolve({
-                                    errCode: 0,
-                                    data: res,
-                                });
-                            } else {
-                                resolve({
-                                    errCode: 0,
-                                    errMessage: 'Không có sản phẩm cho lựa chọn này!',
-                                });
-                            }
-                        }
-                        if (data.action === 'discount') {
-                            let res = products.filter((item) => {
-                                return item.discount > 30 && item.price >= data.priceA && item.price <= data.priceB;
-                            });
-                            if (res.length > 0) {
-                                resolve({
-                                    errCode: 0,
-                                    data: res,
-                                });
-                            } else {
-                                resolve({
-                                    errCode: 0,
-                                    errMessage: 'Không có sản phẩm cho lựa chọn này!',
-                                });
-                            }
-                        }
-                        if (data.action === 'priceLow') {
-                            let res = products.filter((item) => {
-                                return item.price < 100000 && item.price >= data.priceA && item.price <= data.priceB;
-                            });
-                            if (res.length > 0) {
-                                resolve({
-                                    errCode: 0,
-                                    data: res,
-                                });
-                            } else {
-                                resolve({
-                                    errCode: 0,
-                                    errMessage: 'Không có sản phẩm cho lựa chọn này!',
-                                });
-                            }
-                        }
-                        if (data.action === 'priceHigh') {
-                            let res = products.filter((item) => {
-                                return item.price > 20000000 && item.price >= data.priceA && item.price <= data.priceB;
-                            });
-                            if (res.length > 0) {
-                                resolve({
-                                    errCode: 0,
-                                    data: res,
-                                });
-                            } else {
-                                resolve({
-                                    errCode: 0,
-                                    errMessage: 'Không có sản phẩm cho lựa chọn này!',
-                                });
-                            }
-                        }
-                    } else {
-                        if (data.action === 'trend') {
-                            let res = products.filter((item) => {
-                                return item.condition === 'hot';
-                            });
-                            if (res.length > 0) {
-                                resolve({
-                                    errCode: 0,
-                                    data: res,
-                                });
-                            } else {
-                                resolve({
-                                    errCode: 0,
-                                    errMessage: 'Không có sản phẩm cho lựa chọn này!',
-                                });
-                            }
-                        } else if (data.action === 'sold') {
-                            let res = products.filter((item) => {
-                                return item.sold > 30;
-                            });
-                            if (res.length > 0) {
-                                resolve({
-                                    errCode: 0,
-                                    data: res,
-                                });
-                            } else {
-                                resolve({
-                                    errCode: 0,
-                                    errMessage: 'Không có sản phẩm cho lựa chọn này!',
-                                });
-                            }
-                        } else if (data.action === 'discount') {
-                            let res = products.filter((item) => {
-                                return item.discount > 30;
-                            });
-                            if (res.length > 0) {
-                                resolve({
-                                    errCode: 0,
-                                    data: res,
-                                });
-                            } else {
-                                resolve({
-                                    errCode: 0,
-                                    errMessage: 'Không có sản phẩm cho lựa chọn này!',
-                                });
-                            }
-                        } else if (data.action === 'priceLow') {
-                            let res = products.filter((item) => {
-                                return item.price < 100000;
-                            });
-                            resolve({
-                                errCode: 0,
-                                data: res,
-                            });
-                        } else if (data.action === 'priceHigh') {
-                            let res = products.filter((item) => {
-                                return item.price > 20000000;
-                            });
-                            resolve({
-                                errCode: 0,
-                                data: res,
-                            });
-                        } else {
-                            resolve({
-                                errCode: 1,
-                                errMessage: 'Không có sản phẩm cho lựa chọn này!',
-                            });
-                        }
-                    }
-                } else {
-                    resolve({
-                        errCode: 1,
-                        errMessage: 'Danh mục này chưa có sản phẩm!',
-                    });
-                }
             }
         } catch (e) {
             console.log(e);
@@ -1612,6 +2630,88 @@ const handleGetAllOrderNew = () => {
         }
     });
 };
+const handleTurnover = (data) => {
+    return new Promise(async (resolve, reject) => {
+        const TODAY_START = new Date(data).setHours(0, 0, 0, 0);
+        const NOW = moment(data).format('YYYY-MM-DD 23:59');
+        const products = await db.Order.findAll({
+            where: {
+                createdAt: {
+                    [Op.gte]: TODAY_START,
+                    [Op.lte]: NOW,
+                },
+            },
+            attributes: ['order_number', 'sub_total'],
+        });
+
+        resolve({
+            errCode: 0,
+            data: products,
+        });
+        try {
+        } catch (e) {
+            console.log('check ', e);
+            reject(e);
+        }
+    });
+};
+
+const handleTurnoverWeek = (data) => {
+    return new Promise(async (resolve, reject) => {
+        // const TODAY_START = moment('2022-11-01').format('YYYY-MM-DD 00:00');
+        // const NOW = moment('2022-11-30').format('YYYY-MM-DD 23:59');
+
+        // console.log('check data', TODAY_START, NOW);
+        const products = await db.Order.findAll({
+            where: {
+                createdAt: {
+                    [Op.gte]: moment().subtract(1, 'w'),
+                    // [Op.lte]: NOW,
+                },
+            },
+            order: [['createdAt', 'DESC']],
+
+            attributes: ['order_number', 'sub_total', 'createdAt'],
+        });
+
+        resolve({
+            errCode: 0,
+            data: products,
+        });
+        try {
+        } catch (e) {
+            console.log('check ', e);
+            reject(e);
+        }
+    });
+};
+
+const handleTurnoverMonth = (data) => {
+    return new Promise(async (resolve, reject) => {
+        const TODAY_START = moment('2022-11-01').format('YYYY-MM-DD 00:00');
+        const NOW = moment('2022-11-30').format('YYYY-MM-DD 23:59');
+
+        console.log('check data', TODAY_START, NOW);
+        const products = await db.Order.findAll({
+            where: {
+                createdAt: {
+                    [Op.gte]: TODAY_START,
+                    [Op.lte]: NOW,
+                },
+            },
+        });
+
+        resolve({
+            errCode: 0,
+            data: products,
+        });
+        try {
+        } catch (e) {
+            console.log('check ', e);
+            reject(e);
+        }
+    });
+};
 module.exports = {
     createNewBrand,
     getAllBrands,
@@ -1638,4 +2738,7 @@ module.exports = {
     handleCreateOrder,
     handleGetAllOrderNew,
     getProductByCategory,
+    handleTurnover,
+    handleTurnoverMonth,
+    handleTurnoverWeek,
 };

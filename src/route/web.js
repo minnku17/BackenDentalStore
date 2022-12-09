@@ -4,6 +4,10 @@ import userController from '../controller/userController';
 import authController from '../controller/authController';
 import productController from '../controller/productController';
 import orderController from '../controller/orderController';
+import doctorController from '../controller/doctorController';
+import patientController from '../controller/patientController';
+import specialtyController from '../controller/specialtyController';
+
 import middlewareController from '../controller/middlewareController';
 let router = express.Router();
 
@@ -69,8 +73,8 @@ let initWebRoutes = (app) => {
     );
     router.get(
         '/api/getAllBrands',
-        middlewareController.verifyToken,
-        middlewareController.verifyTokenAndAdminAuth,
+        // middlewareController.verifyToken,
+        // middlewareController.verifyTokenAndAdminAuth,
         productController.getAllBrands,
     );
     router.put(
@@ -157,6 +161,10 @@ let initWebRoutes = (app) => {
     router.put('/api/update-coupon', productController.handleUpdateCoupon);
     router.get('/api/search-coupon', productController.handleSearchCoupon);
 
+    router.get('/api/getTurnover', productController.getTurnover);
+    router.get('/api/getTurnoverWeek', productController.handleTurnoverWeek);
+
+    router.get('/api/getTurnoverMonth', productController.handleTurnoverMonth);
     //customer
 
     router.get(
@@ -177,13 +185,34 @@ let initWebRoutes = (app) => {
     router.get('/api/getDetailOrder', orderController.handleGetDetailOrder);
     router.put(
         '/api/handleEditStatus',
-        middlewareController.verifyToken,
-        middlewareController.verifyTokenAndAdminAuth,
+
         orderController.handleEditStatus,
     );
 
     //test api search
     router.get('/api/search-product', productController.handleSearchProduct);
+
+    //Api for booking
+    router.get('/api/allcodes', userController.getAllCode);
+
+    router.get('/api/top-doctor-home', doctorController.getTopDoctorHome);
+    router.get('/api/get-all-doctors', doctorController.getAllDoctors);
+    router.post('/api/save-info-doctors', doctorController.postInfoDoctor);
+    router.get('/api/get-detail-doctor-by-id', doctorController.getDetailDoctorById);
+    router.post('/api/bulk-create-schedule', doctorController.bulkCreateSchedule);
+    router.get('/api/get-schedule-doctor-by-date', doctorController.getScheduleDoctorByDate);
+
+    router.get('/api/get-extra-info-doctor-by-id', doctorController.getExtraInfoDoctorBy);
+
+    router.get('/api/get-profile-doctor-by-id', doctorController.getProfileDoctorById);
+
+    router.post('/api/patient-book-appointment', patientController.postBookAppointment);
+    router.post('/api/verify-book-appointment', patientController.postVerifyBookAppointment);
+
+    router.post('/api/create-new-specialty', specialtyController.createSpecialty);
+
+    router.get('/api/get-specialty', specialtyController.getAllSpecialty);
+    router.get('/api/get-clinic', specialtyController.getAllClinic);
 
     return app.use('/', router);
 };

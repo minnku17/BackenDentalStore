@@ -10,6 +10,8 @@ module.exports = (sequelize, DataTypes) => {
         static associate(models) {
             // define association here
             Markdown.belongsTo(models.Product, { foreignKey: 'product_id' });
+
+            Markdown.belongsTo(models.User, { foreignKey: 'user_id' });
         }
     }
     Markdown.init(

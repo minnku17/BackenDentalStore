@@ -18,11 +18,25 @@ module.exports = (sequelize, DataTypes) => {
          */
         static associate(models) {
             // define association here
+            User.belongsTo(models.Allcode, {
+                foreignKey: 'positionId',
+                targetKey: 'key',
+                as: 'positionData',
+            });
+            User.belongsTo(models.Allcode, {
+                foreignKey: 'gender',
+                targetKey: 'key',
+                as: 'genderData',
+            });
+
             User.hasOne(models.Image, { foreignKey: 'user_id' });
 
             User.hasOne(models.Review, {
                 foreignKey: 'user_id',
             });
+
+            User.hasOne(models.Doctor_info, { foreignKey: 'doctorId' });
+            User.hasOne(models.Markdown, { foreignKey: 'user_id' });
         }
     }
     User.init(

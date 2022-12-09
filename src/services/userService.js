@@ -131,7 +131,16 @@ let handleUserLogin = (email, password) => {
                 //user is already exits
                 let user = await db.User.findOne({
                     where: { email: email },
-                    attributes: ['id', 'email', 'address', 'password', 'roleId', 'rememberToken'],
+                    attributes: [
+                        'id',
+                        'firstName',
+                        'lastName',
+                        'email',
+                        'address',
+                        'password',
+                        'roleId',
+                        'rememberToken',
+                    ],
                     include: [
                         {
                             model: db.Image,
@@ -139,8 +148,6 @@ let handleUserLogin = (email, password) => {
                         },
                     ],
                 });
-
-                console.log(user);
                 if (user) {
                     let check = await bcrypt.compareSync(password, user.password);
                     if (check) {
@@ -465,6 +472,28 @@ let handleGetUserInfoById = (id) => {
         }
     });
 };
+let getAllCodeService = (typeInput) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!typeInput) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Missing required parameters ',
+                });
+            } else {
+                let res = {};
+                let allcode = await db.Allcode.findAll({
+                    where: { type: typeInput },
+                });
+                res.errCode = 0;
+                res.data = allcode;
+                resolve(res);
+            }
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
 
 module.exports = {
     handleUserLogin,
@@ -480,4 +509,5 @@ module.exports = {
     handleEditUser,
     handleRegisterCustomer,
     handleCustomerLogin,
+    getAllCodeService,
 };

@@ -63,7 +63,9 @@ const createNewCategory = async (req, res) => {
 
 const getAllParentCategory = async (req, res) => {
     try {
-        let response = await productService.getAllParentCategory();
+        let limit = req.query.limit;
+
+        let response = await productService.getAllParentCategory(limit);
         return res.status(200).json(response);
     } catch (e) {
         return res.status(200).json({
@@ -158,7 +160,14 @@ const getAllProduct = async (req, res) => {
 };
 const getProductByCategory = async (req, res) => {
     try {
-        let response = await productService.getProductByCategory(req.body);
+        let data = {
+            id: +req.query?.id,
+            brand_id: req.query?.brand_id,
+            priceA: req.query?.priceA,
+            priceB: req.query?.priceB,
+            action: req.query?.action,
+        };
+        let response = await productService.getProductByCategory(data);
         return res.status(200).json(response);
     } catch (e) {
         return res.status(200).json({
@@ -289,6 +298,39 @@ const handleCreateOrder = async (req, res) => {
     }
 };
 
+const getTurnover = async (req, res) => {
+    try {
+        let response = await productService.handleTurnover(req.query.date);
+        return res.status(200).json(response);
+    } catch (e) {
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server...',
+        });
+    }
+};
+const handleTurnoverMonth = async (req, res) => {
+    try {
+        let response = await productService.handleTurnoverMonth();
+        return res.status(200).json(response);
+    } catch (e) {
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server...',
+        });
+    }
+};
+const handleTurnoverWeek = async (req, res) => {
+    try {
+        let response = await productService.handleTurnoverWeek();
+        return res.status(200).json(response);
+    } catch (e) {
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server...',
+        });
+    }
+};
 module.exports = {
     createNewBrand,
     getAllBrands,
@@ -314,4 +356,7 @@ module.exports = {
     handleSearchCoupon,
     handleCreateOrder,
     getProductByCategory,
+    getTurnover,
+    handleTurnoverMonth,
+    handleTurnoverWeek,
 };
