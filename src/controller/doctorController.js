@@ -109,6 +109,32 @@ let getProfileDoctorById = async (req, res) => {
         });
     }
 };
+let getScheduleDoctorById = async (req, res) => {
+    try {
+        console.log('check', req.query.action);
+        let info = await doctorService.getScheduleDoctorById(req.query.id, req.query.date, req.query.action);
+        return res.status(200).json(info);
+    } catch (e) {
+        console.log(e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server...',
+        });
+    }
+};
+
+let editBookAppointment = async (req, res) => {
+    try {
+        let info = await doctorService.editBookAppointment(req.body);
+        return res.status(200).json(info);
+    } catch (e) {
+        console.log(e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server...',
+        });
+    }
+};
 module.exports = {
     getTopDoctorHome: getTopDoctorHome,
     getAllDoctors: getAllDoctors,
@@ -118,4 +144,6 @@ module.exports = {
     getScheduleDoctorByDate: getScheduleDoctorByDate,
     getExtraInfoDoctorBy: getExtraInfoDoctorBy,
     getProfileDoctorById: getProfileDoctorById,
+    getScheduleDoctorById: getScheduleDoctorById,
+    editBookAppointment: editBookAppointment,
 };

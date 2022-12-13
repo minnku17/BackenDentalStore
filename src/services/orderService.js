@@ -120,8 +120,69 @@ const handleEditStatus = (data) => {
     });
 };
 
+const getAllOrderOfUser = (id) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let order = await db.Order.findAll({
+                where: { user_id: id },
+                order: [['id', 'DESC']],
+
+                attributes: ['order_number', 'sub_total', 'status'],
+                include: [
+                    {
+                        model: db.ProductOrder,
+                        attributes: ['quantity'],
+
+                        include: [
+                            {
+                                model: db.Product,
+                                attributes: ['id', 'title', 'price'],
+
+                                as: 'imageData',
+                                include: [
+                                    {
+                                        model: db.Image,
+                                        attributes: ['photo'],
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            });
+            if (order) {
+                order.forEach((item) => {
+                    if (item.ProductOrders) {
+                        item.ProductOrders.forEach((jitem) => {
+                            if (jitem.imageData) {
+                                return (jitem.imageData.Images[0].photo = new Buffer(
+                                    jitem.imageData.Images[0].photo,
+                                    'base64',
+                                ).toString('binary'));
+                            }
+                        });
+                    }
+                });
+                resolve({
+                    errCode: 0,
+                    data: order,
+                });
+            } else {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Không tìm thấy thông tin đơn hàng!!!',
+                });
+            }
+        } catch (e) {
+            console.log('check ', e);
+            reject(e);
+        }
+    });
+};
+
 module.exports = {
     handleGetAllOrderNew,
     handleGetDetailOrder,
     handleEditStatus,
+    getAllOrderOfUser,
 };

@@ -1,6 +1,8 @@
 const db = require('../models');
 require('dotenv').config();
 import _ from 'lodash';
+import moment from 'moment';
+const { Op } = require('sequelize');
 
 const MAX_NUMBER_SCHEDULE = process.env.MAX_NUMBER_SCHEDULE;
 
@@ -66,7 +68,6 @@ let checkRequiredFields = (inputData) => {
     let arrField = [
         'doctorId',
         'contentHTML',
-        'contentMarkdown',
         'action',
         'selectedPrice',
         'selectedPayment',
@@ -74,7 +75,6 @@ let checkRequiredFields = (inputData) => {
         'nameClinic',
         'addressClinic',
         'note',
-        'specialtyId',
     ];
     let isValid = true;
     let element = '';
@@ -99,7 +99,7 @@ let saveDetailInfoDoctor = (inputData) => {
             if (checkObj.isValid === false) {
                 resolve({
                     errCode: -1,
-                    errMessage: 'Missing parameter ',
+                    errMessage: 'Bác sĩ ơi bạn đã quên nhập gì đó !!!',
                 });
             } else {
                 if (inputData.action === 'CREATE') {
@@ -116,20 +116,16 @@ let saveDetailInfoDoctor = (inputData) => {
                     });
 
                     if (doctorMarkdown) {
-                        specificationHtml.contentHTML = inputData.contentHTML;
+                        doctorMarkdown.specificationHtml = inputData.contentHTML;
                         doctorMarkdown.descriptionHtml = inputData.description;
                         await doctorMarkdown.save();
                     }
                 }
 
                 let doctorInfo = await db.Doctor_info.findOne({
-                    where: { user_id: inputData.doctorId },
+                    where: { doctorId: inputData.doctorId },
                     raw: false,
                 });
-                console.log('*******************************');
-
-                console.log(inputData.addressClinic);
-
                 if (doctorInfo) {
                     doctorInfo.doctorId = inputData.doctorId;
                     doctorInfo.priceId = inputData.selectedPrice;
@@ -138,9 +134,6 @@ let saveDetailInfoDoctor = (inputData) => {
                     doctorInfo.nameClinic = inputData.nameClinic;
                     doctorInfo.addressClinic = inputData.addressClinic;
                     doctorInfo.note = inputData.note;
-                    doctorInfo.specialtyId = inputData.specialtyId;
-                    doctorInfo.clinicId = inputData.clinicId;
-
                     await doctorInfo.save();
                 } else {
                     await db.Doctor_info.create({
@@ -151,14 +144,12 @@ let saveDetailInfoDoctor = (inputData) => {
                         nameClinic: inputData.nameClinic,
                         addressClinic: inputData.addressClinic,
                         note: inputData.note,
-                        specialtyId: inputData.specialtyId,
-                        clinicId: inputData.clinicId,
                     });
                 }
 
                 resolve({
                     errCode: 0,
-                    errMessage: 'save info doctor succeed',
+                    errMessage: 'Tạo thông tin bác sĩ thành công.',
                 });
             }
         } catch (e) {
@@ -173,7 +164,7 @@ let getDetailDoctorById = (id) => {
             if (!id) {
                 resolve({
                     errCode: 1,
-                    errMessage: 'Missing parameter...',
+                    errMessage: 'Đã không tìm thấy id của bác sĩ!',
                 });
             } else {
                 let data = await db.User.findOne({
@@ -266,7 +257,6 @@ let bulkCreateSchedule = (data) => {
                 if (toCreate && toCreate.length > 0) {
                     await db.Schedule.bulkCreate(toCreate);
                 }
-                console.log('Check data send: ', schedule);
 
                 resolve({
                     errCode: 0,
@@ -384,7 +374,12 @@ let getProfileDoctorById = (doctorId) => {
                     include: [
                         {
                             model: db.Markdown,
-                            attributes: ['description', 'contentHTML', 'contentMarkdown'],
+                            attributes: ['descriptionHtml', 'specificationHtml'],
+                        },
+
+                        {
+                            model: db.Image,
+                            attributes: ['photo'],
                         },
 
                         {
@@ -418,8 +413,8 @@ let getProfileDoctorById = (doctorId) => {
                     nest: true,
                 });
 
-                if (data && data.image) {
-                    data.image = new Buffer(data.image, 'base64').toString('binary');
+                if (data && data.Image) {
+                    data.Image.photo = new Buffer(data.Image.photo, 'base64').toString('binary');
                 }
 
                 if (!data) data = {};
@@ -434,6 +429,80 @@ let getProfileDoctorById = (doctorId) => {
         }
     });
 };
+const getScheduleDoctorById = (id, date, action) => {
+    let whereS2 = {
+        doctorId: id,
+        statusId: 'S2',
+        date: date,
+    };
+    let whereS3 = {
+        doctorId: id,
+        statusId: 'S3',
+    };
+    return new Promise(async (resolve, reject) => {
+        const dataBooking = await db.Booking.findAll({
+            where: action === 'history' ? whereS3 : whereS2,
+            include: [
+                {
+                    model: db.User,
+                    attributes: ['address', 'email', 'phonenumber', 'lastName'],
+                },
+                {
+                    model: db.Allcode,
+                    as: 'time',
+                    attributes: ['valueVi'],
+                },
+            ],
+            attributes: {
+                exclude: ['token', 'createdAt', 'updatedAt'],
+            },
+
+            raw: false,
+            nest: true,
+        });
+
+        if (!dataBooking) dataBooking = [];
+
+        resolve({
+            errCode: 0,
+            data: dataBooking,
+        });
+        try {
+        } catch (e) {
+            console.log('check ', e);
+            reject(e);
+        }
+    });
+};
+const editBookAppointment = (data) => {
+    return new Promise(async (resolve, reject) => {
+        if (!data.id) {
+            resolve({
+                errCode: 1,
+                errMessage: 'Đã xảy ra sai sót gì đó vui lòng thử lại !!!',
+            });
+        } else {
+            let res = await db.Booking.update({ statusId: data.status }, { where: { id: data.id } });
+            if (res[0] !== 1) {
+                resolve({
+                    errCode: 2,
+                    errMessage: 'Không tìm thấy đơn khám trên hệ thống, vui lòng thử lại!',
+                });
+            } else {
+                resolve({
+                    errCode: 0,
+                    errMessage: 'Đã cập nhật trạng thái thành công!',
+                });
+            }
+            console.log('check res from edit', res);
+        }
+        try {
+        } catch (e) {
+            console.log('check ', e);
+            reject(e);
+        }
+    });
+};
 module.exports = {
     getTopDoctorHome: getTopDoctorHome,
     getAllDoctors: getAllDoctors,
@@ -443,4 +512,6 @@ module.exports = {
     getScheduleDoctorByDate: getScheduleDoctorByDate,
     getExtraInfoDoctorBy: getExtraInfoDoctorBy,
     getProfileDoctorById: getProfileDoctorById,
+    getScheduleDoctorById: getScheduleDoctorById,
+    editBookAppointment: editBookAppointment,
 };

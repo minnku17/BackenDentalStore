@@ -189,6 +189,8 @@ let initWebRoutes = (app) => {
         orderController.handleEditStatus,
     );
 
+    router.get('/api/get-all-order-of-user', orderController.getAllOrderOfUser);
+
     //test api search
     router.get('/api/search-product', productController.handleSearchProduct);
 
@@ -208,11 +210,9 @@ let initWebRoutes = (app) => {
 
     router.post('/api/patient-book-appointment', patientController.postBookAppointment);
     router.post('/api/verify-book-appointment', patientController.postVerifyBookAppointment);
+    router.put('/api/edit-book-appointment', doctorController.editBookAppointment);
 
-    router.post('/api/create-new-specialty', specialtyController.createSpecialty);
-
-    router.get('/api/get-specialty', specialtyController.getAllSpecialty);
-    router.get('/api/get-clinic', specialtyController.getAllClinic);
+    router.get('/api/get-schedule-doctor-by-id', doctorController.getScheduleDoctorById);
 
     return app.use('/', router);
 };

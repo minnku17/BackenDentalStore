@@ -25,8 +25,18 @@ const handleGetDetailOrder = async (req, res) => {
 };
 const handleEditStatus = async (req, res) => {
     try {
-        console.log(req.body);
         let response = await orderService.handleEditStatus(req.body);
+        return res.status(200).json(response);
+    } catch (e) {
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server...',
+        });
+    }
+};
+const getAllOrderOfUser = async (req, res) => {
+    try {
+        let response = await orderService.getAllOrderOfUser(req.query.id);
         return res.status(200).json(response);
     } catch (e) {
         return res.status(200).json({
@@ -40,4 +50,5 @@ module.exports = {
     handleGetAllOrderNew,
     handleGetDetailOrder,
     handleEditStatus,
+    getAllOrderOfUser,
 };

@@ -298,6 +298,7 @@ let handleGetAllUsers = () => {
     return new Promise(async (resolve, reject) => {
         try {
             let user = await db.User.findAll({
+                where: { positionId: 'None' },
                 attributes: {
                     exclude: ['password'],
                 },
@@ -308,6 +309,8 @@ let handleGetAllUsers = () => {
                     },
                 ],
             });
+
+            console.log('check user', user);
 
             user.forEach((item) => {
                 if (item.Image.photo) {
