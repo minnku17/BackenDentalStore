@@ -1,4 +1,5 @@
 import moment from 'moment/moment';
+import gift from '../models/gift';
 import db from '../models/index';
 const { Op } = require('sequelize');
 
@@ -57,6 +58,8 @@ const getAllBrands = () => {
                         attributes: ['photo'],
                     },
                 ],
+                raw: false,
+                nest: true,
             });
 
             if (res) {
@@ -180,7 +183,7 @@ const createNewCategory = (data) => {
                         summary: data.summary,
                         photo: data.image,
 
-                        is_parent: data.is_parent,
+                        is_parent: data.is_parent === '' ? 0 : data.is_parent,
                         parent_id: data.parent_id,
                         status: data.status,
                     });
@@ -239,7 +242,6 @@ const getAllCategoryAdmin = () => {
     return new Promise(async (resolve, reject) => {
         try {
             let res = await db.Category.findAll({
-                raw: false,
                 order: [['createdAt', 'DESC']],
                 include: [
                     {
@@ -247,6 +249,8 @@ const getAllCategoryAdmin = () => {
                         attributes: ['photo'],
                     },
                 ],
+                raw: false,
+                nest: true,
             });
 
             if (res) {
@@ -281,6 +285,8 @@ const getAllParentCategory = (limit) => {
                             attributes: ['photo'],
                         },
                     ],
+                    raw: false,
+                    nest: true,
                 });
                 allCat.forEach((item) => {
                     if (item.Image.photo) {
@@ -303,6 +309,8 @@ const getAllParentCategory = (limit) => {
                             attributes: ['photo'],
                         },
                     ],
+                    raw: false,
+                    nest: true,
                 });
                 allCat.forEach((item) => {
                     if (item.Image.photo) {
@@ -664,6 +672,9 @@ const getProductByCategory = (data) => {
                                     attributes: ['rate'],
                                 },
                             ],
+
+                            raw: false,
+                            nest: true,
                         });
                         if (res.length > 0) {
                             res.forEach((item) => {
@@ -716,6 +727,8 @@ const getProductByCategory = (data) => {
                                     attributes: ['rate'],
                                 },
                             ],
+                            raw: false,
+                            nest: true,
                         });
                         if (res.length > 0) {
                             res.forEach((item) => {
@@ -768,6 +781,8 @@ const getProductByCategory = (data) => {
                                     attributes: ['rate'],
                                 },
                             ],
+                            raw: false,
+                            nest: true,
                         });
                         if (res.length > 0) {
                             res.forEach((item) => {
@@ -820,6 +835,8 @@ const getProductByCategory = (data) => {
                                     attributes: ['rate'],
                                 },
                             ],
+                            raw: false,
+                            nest: true,
                         });
                         if (res.length > 0) {
                             res.forEach((item) => {
@@ -872,6 +889,8 @@ const getProductByCategory = (data) => {
                                     attributes: ['rate'],
                                 },
                             ],
+                            raw: false,
+                            nest: true,
                         });
                         if (res.length > 0) {
                             res.forEach((item) => {
@@ -915,6 +934,8 @@ const getProductByCategory = (data) => {
                                     attributes: ['rate'],
                                 },
                             ],
+                            raw: false,
+                            nest: true,
                         });
                         if (res.length > 0) {
                             res.forEach((item) => {
@@ -962,6 +983,8 @@ const getProductByCategory = (data) => {
                                     attributes: ['rate'],
                                 },
                             ],
+                            raw: false,
+                            nest: true,
                         });
                         if (res.length > 0) {
                             res.forEach((item) => {
@@ -1009,6 +1032,8 @@ const getProductByCategory = (data) => {
                                     attributes: ['rate'],
                                 },
                             ],
+                            raw: false,
+                            nest: true,
                         });
                         if (res.length > 0) {
                             res.forEach((item) => {
@@ -1056,6 +1081,8 @@ const getProductByCategory = (data) => {
                                     attributes: ['rate'],
                                 },
                             ],
+                            raw: false,
+                            nest: true,
                         });
                         if (res.length > 0) {
                             res.forEach((item) => {
@@ -1103,6 +1130,8 @@ const getProductByCategory = (data) => {
                                     attributes: ['rate'],
                                 },
                             ],
+                            raw: false,
+                            nest: true,
                         });
                         if (res.length > 0) {
                             res.forEach((item) => {
@@ -1156,6 +1185,8 @@ const getProductByCategory = (data) => {
                                     attributes: ['rate'],
                                 },
                             ],
+                            raw: false,
+                            nest: true,
                         });
                         if (res.length > 0) {
                             res.forEach((item) => {
@@ -1208,6 +1239,8 @@ const getProductByCategory = (data) => {
                                     attributes: ['rate'],
                                 },
                             ],
+                            raw: false,
+                            nest: true,
                         });
                         if (res.length > 0) {
                             res.forEach((item) => {
@@ -1260,6 +1293,8 @@ const getProductByCategory = (data) => {
                                     attributes: ['rate'],
                                 },
                             ],
+                            raw: false,
+                            nest: true,
                         });
                         if (res.length > 0) {
                             res.forEach((item) => {
@@ -1312,6 +1347,8 @@ const getProductByCategory = (data) => {
                                     attributes: ['rate'],
                                 },
                             ],
+                            raw: false,
+                            nest: true,
                         });
                         if (res.length > 0) {
                             res.forEach((item) => {
@@ -1364,6 +1401,8 @@ const getProductByCategory = (data) => {
                                     attributes: ['rate'],
                                 },
                             ],
+                            raw: false,
+                            nest: true,
                         });
                         if (res.length > 0) {
                             res.forEach((item) => {
@@ -1407,6 +1446,8 @@ const getProductByCategory = (data) => {
                                     attributes: ['rate'],
                                 },
                             ],
+                            raw: false,
+                            nest: true,
                         });
                         if (res.length > 0) {
                             res.forEach((item) => {
@@ -1454,6 +1495,8 @@ const getProductByCategory = (data) => {
                                     attributes: ['rate'],
                                 },
                             ],
+                            raw: false,
+                            nest: true,
                         });
                         if (res.length > 0) {
                             res.forEach((item) => {
@@ -1501,6 +1544,8 @@ const getProductByCategory = (data) => {
                                     attributes: ['rate'],
                                 },
                             ],
+                            raw: false,
+                            nest: true,
                         });
                         if (res.length > 0) {
                             res.forEach((item) => {
@@ -1548,6 +1593,8 @@ const getProductByCategory = (data) => {
                                     attributes: ['rate'],
                                 },
                             ],
+                            raw: false,
+                            nest: true,
                         });
                         if (res.length > 0) {
                             res.forEach((item) => {
@@ -1595,6 +1642,8 @@ const getProductByCategory = (data) => {
                                     attributes: ['rate'],
                                 },
                             ],
+                            raw: false,
+                            nest: true,
                         });
                         if (res.length > 0) {
                             res.forEach((item) => {
@@ -1647,6 +1696,8 @@ const getProductByCategory = (data) => {
                                     attributes: ['rate'],
                                 },
                             ],
+                            raw: false,
+                            nest: true,
                         });
                         if (res.length > 0) {
                             res.forEach((item) => {
@@ -1700,6 +1751,8 @@ const getProductByCategory = (data) => {
                                     attributes: ['rate'],
                                 },
                             ],
+                            raw: false,
+                            nest: true,
                         });
                         if (res.length > 0) {
                             res.forEach((item) => {
@@ -1753,6 +1806,8 @@ const getProductByCategory = (data) => {
                                     attributes: ['rate'],
                                 },
                             ],
+                            raw: false,
+                            nest: true,
                         });
                         if (res.length > 0) {
                             res.forEach((item) => {
@@ -1806,6 +1861,8 @@ const getProductByCategory = (data) => {
                                     attributes: ['rate'],
                                 },
                             ],
+                            raw: false,
+                            nest: true,
                         });
                         if (res.length > 0) {
                             res.forEach((item) => {
@@ -1859,6 +1916,8 @@ const getProductByCategory = (data) => {
                                     attributes: ['rate'],
                                 },
                             ],
+                            raw: false,
+                            nest: true,
                         });
                         if (res.length > 0) {
                             res.forEach((item) => {
@@ -1903,6 +1962,8 @@ const getProductByCategory = (data) => {
                                     attributes: ['rate'],
                                 },
                             ],
+                            raw: false,
+                            nest: true,
                         });
                         if (res.length > 0) {
                             res.forEach((item) => {
@@ -1951,6 +2012,8 @@ const getProductByCategory = (data) => {
                                     attributes: ['rate'],
                                 },
                             ],
+                            raw: false,
+                            nest: true,
                         });
                         if (res.length > 0) {
                             res.forEach((item) => {
@@ -1999,6 +2062,8 @@ const getProductByCategory = (data) => {
                                     attributes: ['rate'],
                                 },
                             ],
+                            raw: false,
+                            nest: true,
                         });
                         if (res.length > 0) {
                             res.forEach((item) => {
@@ -2047,6 +2112,8 @@ const getProductByCategory = (data) => {
                                     attributes: ['rate'],
                                 },
                             ],
+                            raw: false,
+                            nest: true,
                         });
                         if (res.length > 0) {
                             res.forEach((item) => {
@@ -2095,6 +2162,8 @@ const getProductByCategory = (data) => {
                                     attributes: ['rate'],
                                 },
                             ],
+                            raw: false,
+                            nest: true,
                         });
                         if (res.length > 0) {
                             res.forEach((item) => {
@@ -2140,10 +2209,17 @@ const getAllProductHome = () => {
                         model: db.Image,
                         attributes: ['photo'],
                     },
+                    {
+                        model: db.Review,
+                        attributes: ['rate'],
+                    },
                 ],
+                raw: false,
+                nest: true,
             });
 
             if (res) {
+                console.log('check', res);
                 // res.forEach((item) => {
                 //     return (item.photo = new Buffer(item.photo, 'base64').toString('binary'));
                 // });
@@ -2154,6 +2230,7 @@ const getAllProductHome = () => {
                     productData.brand = item.Brand?.title;
                     productData.image = imageR;
                     productData.discount = item.discount;
+                    productData.reviews = item.Reviews;
                     productData.id = item.id;
                     productData.price = item.price;
                     productData.sold = item.sold;
@@ -2228,6 +2305,22 @@ const getProductInfoById = (id) => {
                         model: db.Category,
                         attributes: ['title'],
                     },
+                    {
+                        model: db.Review,
+                        attributes: ['id', 'rate', 'title', 'description', 'status'],
+                        include: [
+                            {
+                                model: db.User,
+                                attributes: ['firstName'],
+                                include: [
+                                    {
+                                        model: db.Image,
+                                        attributes: ['photo'],
+                                    },
+                                ],
+                            },
+                        ],
+                    },
 
                     {
                         model: db.Markdown,
@@ -2238,37 +2331,21 @@ const getProductInfoById = (id) => {
                         attributes: ['photo'],
                     },
                 ],
+                raw: false,
+                nest: true,
             });
 
-            let user = await db.User.findAll({
-                where: { review_id: id },
-                attributes: ['firstName', 'lastName'],
-                include: [
-                    {
-                        model: db.Image,
-                        attributes: ['photo'],
-                    },
-                    {
-                        model: db.Review,
-                        attributes: ['id', 'rate', 'title', 'description', 'status'],
-                    },
-                ],
-            });
-
-            user.map((item) => {
-                if (item.Image.photo) {
-                    item.Image.photo = new Buffer(item.Image.photo, 'base64').toString('binary');
-                }
-            });
-
-            let arrUser = [];
-            if (user) {
-                let obj = {};
+            if (res.Reviews && res.Reviews.length > 0) {
+                res.Reviews.map((item) => {
+                    if (item.User && item.User.Image.photo) {
+                        item.User.Image.photo = new Buffer(item.User.Image.photo, 'base64').toString('binary');
+                    }
+                });
             }
 
             let dataProduct = {};
             dataProduct.dataProduct = res;
-            dataProduct.InfoUserReview = user;
+            // dataProduct.InfoUserReview = user;
 
             if (!res) {
                 resolve({
@@ -2437,7 +2514,6 @@ const handleAddCoupon = (data) => {
             const res = await db.Coupon.findOne({
                 where: { code: data.code },
             });
-            console.log(res);
             if (res) {
                 resolve({
                     errCode: 1,
@@ -2453,6 +2529,51 @@ const handleAddCoupon = (data) => {
                 resolve({
                     errCode: 0,
                     errMessage: 'Add coupon successfully!!!',
+                });
+            }
+        } catch (e) {
+            console.log(e);
+            reject(e);
+        }
+    });
+};
+
+const getAllCoupon = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const res = await db.Coupon.findAll();
+            if (res && res.length > 0) {
+                resolve({
+                    errCode: 0,
+                    data: res,
+                });
+            } else {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Đã có lỗi gì đó, vui lòng thử lại sau!',
+                });
+            }
+        } catch (e) {
+            console.log(e);
+            reject(e);
+        }
+    });
+};
+const handleDeleteCoupon = (id) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const res = await db.Coupon.destroy({
+                where: { id: id },
+            });
+            if (res) {
+                resolve({
+                    errCode: 0,
+                    errMessage: 'Xóa mã giảm giá thành công!',
+                });
+            } else {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Đã có lỗi gì đó, vui lòng thử lại sau!',
                 });
             }
         } catch (e) {
@@ -2485,8 +2606,8 @@ const handleUpdateCoupon = (data) => {
                     },
                 );
                 resolve({
-                    errCode: 1,
-                    errMessage: 'coupon is exits',
+                    errCode: 0,
+                    errMessage: 'Cập nhật thành công!!!',
                 });
             }
         } catch (e) {
@@ -2545,9 +2666,11 @@ const handleCreateOrder = (data) => {
                     });
                 }
             }
+
             let res = await db.Order.create({
                 user_id: data.user_id,
                 order_number: data.order_number,
+                product_id: 0,
                 coupon: data.coupon,
                 sub_total: data.sub_total,
                 quantity: data.quantity,
@@ -2559,8 +2682,11 @@ const handleCreateOrder = (data) => {
                 email: data.email,
                 status: data.status,
             });
+            console.log('check data', res);
 
             let arr = [];
+            console.log('check data');
+
             data.product.map((item) => {
                 let obj = {};
 
@@ -2570,6 +2696,8 @@ const handleCreateOrder = (data) => {
 
                 return arr.push(obj);
             });
+            console.log('check data', arr);
+
             await db.ProductOrder.bulkCreate(arr);
             arr.forEach(async (item) => {
                 let prod = await db.Product.findOne({
@@ -2609,7 +2737,7 @@ const handleCreateOrder = (data) => {
                 errMessage: 'Đặt hàng thành công !!!',
             });
         } catch (e) {
-            console.log(e);
+            console.log('check loi service', e);
             reject(e);
         }
     });
@@ -2632,23 +2760,28 @@ const handleGetAllOrderNew = () => {
 };
 const handleTurnover = (data) => {
     return new Promise(async (resolve, reject) => {
-        const TODAY_START = new Date(data).setHours(0, 0, 0, 0);
-        const NOW = moment(data).format('YYYY-MM-DD 23:59');
-        const products = await db.Order.findAll({
-            where: {
-                createdAt: {
-                    [Op.gte]: TODAY_START,
-                    [Op.lte]: NOW,
-                },
-            },
-            attributes: ['order_number', 'sub_total'],
-        });
-
-        resolve({
-            errCode: 0,
-            data: products,
-        });
         try {
+            const TODAY_START = new Date(data).setUTCHours(0, 0, 0, 0);
+
+            const NOW = new Date(data).setUTCHours(23, 59, 59, 999);
+            console.log('check data input', NOW);
+
+            const products = await db.Order.findAll({
+                where: {
+                    createdAt: {
+                        [Op.gte]: TODAY_START,
+                        [Op.lte]: NOW,
+                    },
+                },
+                attributes: ['order_number', 'sub_total'],
+            });
+
+            console.log('check data ', products);
+
+            resolve({
+                errCode: 0,
+                data: products,
+            });
         } catch (e) {
             console.log('check ', e);
             reject(e);
@@ -2662,23 +2795,24 @@ const handleTurnoverWeek = (data) => {
         // const NOW = moment('2022-11-30').format('YYYY-MM-DD 23:59');
 
         // console.log('check data', TODAY_START, NOW);
-        const products = await db.Order.findAll({
-            where: {
-                createdAt: {
-                    [Op.gte]: moment().subtract(1, 'w'),
-                    // [Op.lte]: NOW,
-                },
-            },
-            order: [['createdAt', 'DESC']],
 
-            attributes: ['order_number', 'sub_total', 'createdAt'],
-        });
-
-        resolve({
-            errCode: 0,
-            data: products,
-        });
         try {
+            const products = await db.Order.findAll({
+                where: {
+                    createdAt: {
+                        [Op.gte]: moment().subtract(1, 'w'),
+                        // [Op.lte]: NOW,
+                    },
+                },
+                order: [['createdAt', 'DESC']],
+
+                attributes: ['order_number', 'sub_total', 'createdAt'],
+            });
+
+            resolve({
+                errCode: 0,
+                data: products,
+            });
         } catch (e) {
             console.log('check ', e);
             reject(e);
@@ -2688,24 +2822,170 @@ const handleTurnoverWeek = (data) => {
 
 const handleTurnoverMonth = (data) => {
     return new Promise(async (resolve, reject) => {
-        const TODAY_START = moment('2022-11-01').format('YYYY-MM-DD 00:00');
-        const NOW = moment('2022-11-30').format('YYYY-MM-DD 23:59');
-
-        console.log('check data', TODAY_START, NOW);
-        const products = await db.Order.findAll({
-            where: {
-                createdAt: {
-                    [Op.gte]: TODAY_START,
-                    [Op.lte]: NOW,
-                },
-            },
-        });
-
-        resolve({
-            errCode: 0,
-            data: products,
-        });
         try {
+            const TODAY_START = moment('2022-11-01').format('YYYY-MM-DD 00:00');
+            const NOW = moment('2022-11-30').format('YYYY-MM-DD 23:59');
+
+            const products = await db.Order.findAll({
+                where: {
+                    createdAt: {
+                        [Op.gte]: TODAY_START,
+                        [Op.lte]: NOW,
+                    },
+                },
+            });
+
+            resolve({
+                errCode: 0,
+                data: products,
+            });
+        } catch (e) {
+            console.log('check ', e);
+            reject(e);
+        }
+    });
+};
+const handleAddGift = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data.title || !data.status) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Đã có lỗi xảy ra vui lòng thử lại sau!',
+                });
+            } else {
+                await db.Gift.create({
+                    title: data.title,
+                    status: data.status,
+                });
+                resolve({
+                    errCode: 0,
+                    errMessgae: 'Thêm quà tặng thành công!',
+                });
+            }
+        } catch (e) {
+            console.log('check ', e);
+            reject(e);
+        }
+    });
+};
+const handleGetAllGift = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const gifts = await db.Gift.findAll({
+                order: [['createdAt', 'DESC']],
+            });
+            if (gifts) {
+                resolve({
+                    errCode: 0,
+                    data: gifts,
+                });
+            } else {
+                resolve({
+                    errCode: 1,
+                    data: [],
+                });
+            }
+        } catch (e) {
+            console.log('check ', e);
+            reject(e);
+        }
+    });
+};
+const handleGetAllGiftActive = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const gifts = await db.Gift.findAll({
+                order: [['createdAt', 'DESC']],
+                where: { status: 1 },
+            });
+            if (gifts) {
+                resolve({
+                    errCode: 0,
+                    data: gifts,
+                });
+            } else {
+                resolve({
+                    errCode: 1,
+                    data: [],
+                });
+            }
+        } catch (e) {
+            console.log('check ', e);
+            reject(e);
+        }
+    });
+};
+const handleEditGift = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let res = await db.Gift.findOne({
+                where: { id: data.id },
+                raw: false,
+                nest: true,
+            });
+            if (res) {
+                res.title = data.title;
+                res.status = +data.status;
+                console.log('check gift', res);
+                await res.save();
+                resolve({
+                    errCode: 0,
+                    errMessage: 'Cập nhật quà tặng thành công!',
+                });
+            } else {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Không tìm thấy quà tặng đang chỉnh sửa trong hệ thống!',
+                });
+            }
+        } catch (e) {
+            console.log('check ', e);
+            reject(e);
+        }
+    });
+};
+const handleGetDetailGift = (id) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const gift = await db.Gift.findOne({
+                where: { id: id },
+            });
+            if (gift) {
+                resolve({
+                    errCode: 0,
+                    data: gift,
+                });
+            } else {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Không tìm thấy quà tặng đang chỉnh sửa trong hệ thống!',
+                });
+            }
+        } catch (e) {
+            console.log('check ', e);
+            reject(e);
+        }
+    });
+};
+const handleDeleteGift = (id) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const gift = await db.Gift.destroy({
+                where: { id: id },
+            });
+            console.log('check delete', gift);
+            if (gift) {
+                resolve({
+                    errCode: 0,
+                    errMessage: 'Xóa quà tặng thành công!',
+                });
+            } else {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'Không tìm thấy quà tặng đang chỉnh sửa trong hệ thống!',
+                });
+            }
         } catch (e) {
             console.log('check ', e);
             reject(e);
@@ -2733,6 +3013,8 @@ module.exports = {
     handleReviewProduct,
     handleAddProductToCart,
     handleAddCoupon,
+    getAllCoupon,
+    handleDeleteCoupon,
     handleUpdateCoupon,
     handleSearchCoupon,
     handleCreateOrder,
@@ -2741,4 +3023,10 @@ module.exports = {
     handleTurnover,
     handleTurnoverMonth,
     handleTurnoverWeek,
+    handleAddGift,
+    handleGetAllGift,
+    handleGetAllGiftActive,
+    handleEditGift,
+    handleGetDetailGift,
+    handleDeleteGift,
 };

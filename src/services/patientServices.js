@@ -63,8 +63,6 @@ let postBookAppointment = (data) => {
     });
 };
 let postVerifyBookAppointment = (data) => {
-    console.log('checkkk data', data);
-
     return new Promise(async (resolve, reject) => {
         try {
             if (!data.doctorId || !data.token) {

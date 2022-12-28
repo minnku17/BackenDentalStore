@@ -1,5 +1,4 @@
 import doctorService from '../services/doctorService';
-import db from '../models/index';
 
 let getTopDoctorHome = async (req, res) => {
     let limit = req.query.limit;
@@ -135,6 +134,18 @@ let editBookAppointment = async (req, res) => {
         });
     }
 };
+let handleCreateAllcodes = async (req, res) => {
+    try {
+        let info = await doctorService.handleCreateAllcodes(req.body);
+        return res.status(200).json(info);
+    } catch (e) {
+        console.log(e);
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server...',
+        });
+    }
+};
 module.exports = {
     getTopDoctorHome: getTopDoctorHome,
     getAllDoctors: getAllDoctors,
@@ -146,4 +157,5 @@ module.exports = {
     getProfileDoctorById: getProfileDoctorById,
     getScheduleDoctorById: getScheduleDoctorById,
     editBookAppointment: editBookAppointment,
+    handleCreateAllcodes: handleCreateAllcodes,
 };

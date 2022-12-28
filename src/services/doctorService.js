@@ -158,7 +158,6 @@ let saveDetailInfoDoctor = (inputData) => {
     });
 };
 let getDetailDoctorById = (id) => {
-    console.log('chekc id', id);
     return new Promise(async (resolve, reject) => {
         try {
             if (!id) {
@@ -280,7 +279,7 @@ let getScheduleDoctorByDate = (doctorId, date) => {
                 let dataSchedule = await db.Schedule.findAll({
                     where: {
                         doctorId: doctorId,
-                        date: date,
+                        date: +date,
                     },
                     include: [
                         {
@@ -297,6 +296,7 @@ let getScheduleDoctorByDate = (doctorId, date) => {
                     raw: false,
                     nest: true,
                 });
+                console.log('checkd ata', dataSchedule);
 
                 if (!dataSchedule) dataSchedule = [];
 
@@ -494,9 +494,34 @@ const editBookAppointment = (data) => {
                     errMessage: 'Đã cập nhật trạng thái thành công!',
                 });
             }
-            console.log('check res from edit', res);
         }
         try {
+        } catch (e) {
+            console.log('check ', e);
+            reject(e);
+        }
+    });
+};
+const handleCreateAllcodes = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!data) {
+                resolve({
+                    errCode: 1,
+                    errMessage: 'fail',
+                });
+            } else {
+                await db.Allcode.create({
+                    key: data.key,
+                    type: data.type,
+                    valueEn: data.valueEn,
+                    valueVi: data.valueVi,
+                });
+                resolve({
+                    errCode: 0,
+                    errMessage: 'create success',
+                });
+            }
         } catch (e) {
             console.log('check ', e);
             reject(e);
@@ -514,4 +539,5 @@ module.exports = {
     getProfileDoctorById: getProfileDoctorById,
     getScheduleDoctorById: getScheduleDoctorById,
     editBookAppointment: editBookAppointment,
+    handleCreateAllcodes: handleCreateAllcodes,
 };

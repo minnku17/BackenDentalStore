@@ -66,6 +66,8 @@ const handleGetDetailOrder = (id) => {
                         ],
                     },
                 ],
+                raw: false,
+                nest: true,
             });
             if (order) {
                 let imageProducts = order.ProductOrders;
@@ -97,7 +99,6 @@ const handleEditStatus = (data) => {
             let order = await db.Order.findOne({
                 where: { id: data.id },
             });
-            console.log(order);
             if (order) {
                 await db.Order.update(
                     {
@@ -149,6 +150,8 @@ const getAllOrderOfUser = (id) => {
                         ],
                     },
                 ],
+                raw: false,
+                nest: true,
             });
             if (order) {
                 order.forEach((item) => {

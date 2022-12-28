@@ -62,10 +62,10 @@ const handleLogout = async (req, res) => {
 
 const handleCustomerLogin = async (req, res) => {
     try {
-        console.log(req.body);
         let response = await userService.handleCustomerLogin(req.body);
         return res.status(200).json(response);
     } catch (e) {
+        console.log('check', e);
         return res.status(200).json({
             errCode: -1,
             errMessage: 'Error from server...',

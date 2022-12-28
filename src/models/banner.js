@@ -9,6 +9,7 @@ module.exports = (sequelize, DataTypes) => {
          */
         static associate(models) {
             // define association here
+            Banner.hasOne(models.Image, { foreignKey: 'banner_id' });
         }
     }
     Banner.init(

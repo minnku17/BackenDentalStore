@@ -147,6 +147,8 @@ let handleUserLogin = (email, password) => {
                             attributes: ['photo'],
                         },
                     ],
+                    raw: false,
+                    nest: true,
                 });
                 if (user) {
                     let check = await bcrypt.compareSync(password, user.password);
@@ -194,6 +196,7 @@ let handleUserLogin = (email, password) => {
 };
 let handleCustomerLogin = (data) => {
     return new Promise(async (resolve, reject) => {
+        console.log('check data', data);
         try {
             let userData = {};
             let isExits = await checkUserEmail(data.email);
@@ -208,9 +211,10 @@ let handleCustomerLogin = (data) => {
                             attributes: ['photo'],
                         },
                     ],
+                    raw: false,
+                    nest: true,
                 });
 
-                console.log(user);
                 if (user) {
                     let check = await bcrypt.compareSync(data.password, user.password);
                     if (check) {
@@ -308,9 +312,9 @@ let handleGetAllUsers = () => {
                         attributes: ['photo'],
                     },
                 ],
+                raw: false,
+                nest: true,
             });
-
-            console.log('check user', user);
 
             user.forEach((item) => {
                 if (item.Image.photo) {
@@ -458,6 +462,8 @@ let handleGetUserInfoById = (id) => {
                         attributes: ['photo'],
                     },
                 ],
+                raw: false,
+                nest: true,
             });
 
             if (user.Image.photo) {

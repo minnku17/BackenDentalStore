@@ -12,6 +12,7 @@ module.exports = (sequelize, DataTypes) => {
             Image.belongsTo(models.User, { foreignKey: 'user_id' });
             Image.belongsTo(models.Brand, { foreignKey: 'brand_id' });
             Image.belongsTo(models.Category, { foreignKey: 'cat_id' });
+            Image.belongsTo(models.Banner, { foreignKey: 'banner_id' });
 
             Image.belongsTo(models.Product, {
                 foreignKey: 'product_id',

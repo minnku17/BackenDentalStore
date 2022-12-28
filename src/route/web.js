@@ -6,8 +6,7 @@ import productController from '../controller/productController';
 import orderController from '../controller/orderController';
 import doctorController from '../controller/doctorController';
 import patientController from '../controller/patientController';
-import specialtyController from '../controller/specialtyController';
-
+import bannerController from '../controller/bannerController';
 import middlewareController from '../controller/middlewareController';
 let router = express.Router();
 
@@ -25,8 +24,8 @@ let initWebRoutes = (app) => {
     //authenticate
     router.post(
         '/api/register',
-        middlewareController.verifyToken,
-        middlewareController.verifyTokenAndAdminAuth,
+        // middlewareController.verifyToken,
+        // middlewareController.verifyTokenAndAdminAuth,
         authController.registerUser,
     );
     router.post('/api/login', authController.handleLogin);
@@ -61,7 +60,11 @@ let initWebRoutes = (app) => {
         middlewareController.verifyTokenAndAdminAuth,
         userController.handleEditUser,
     );
+    //Api banner
+    router.post('/api/create-banner', bannerController.handleCreateNewBanner);
+    router.get('/api/get-all-banner', bannerController.handleGetAllBanner);
 
+    router.put('/api/update-banner', bannerController.handleUpdateBanner);
     //Api product
 
     //Brands product
@@ -156,9 +159,33 @@ let initWebRoutes = (app) => {
         productController.handleReviewProduct,
     );
     router.post('/api/add-product-to-cart', productController.handleAddProductToCart);
+    //gift
+    router.post('/api/add-gift', productController.handleAddGift);
+    router.get('/api/get-all-gift', productController.handleGetAllGift);
+    router.get('/api/get-all-gift-active', productController.handleGetAllGiftActive);
+    router.get('/api/get-detail-gift', productController.handleGetDetailGift);
+    router.put('/api/edit-gift', productController.handleEditGift);
+    router.delete('/api/handle-delete-gift', productController.handleDeleteGift);
     //coupon
-    router.post('/api/add-coupon', productController.handleAddCoupon);
-    router.put('/api/update-coupon', productController.handleUpdateCoupon);
+    router.post(
+        '/api/add-coupon',
+        middlewareController.verifyToken,
+        middlewareController.verifyTokenAndAdminAuth,
+        productController.handleAddCoupon,
+    );
+    router.get('/api/get-all-coupon', productController.getAllCoupon);
+    router.put(
+        '/api/update-coupon',
+        middlewareController.verifyToken,
+        middlewareController.verifyTokenAndAdminAuth,
+        productController.handleUpdateCoupon,
+    );
+    router.delete(
+        '/api/delete-coupon',
+        middlewareController.verifyToken,
+        middlewareController.verifyTokenAndAdminAuth,
+        productController.handleDeleteCoupon,
+    );
     router.get('/api/search-coupon', productController.handleSearchCoupon);
 
     router.get('/api/getTurnover', productController.getTurnover);
@@ -213,6 +240,8 @@ let initWebRoutes = (app) => {
     router.put('/api/edit-book-appointment', doctorController.editBookAppointment);
 
     router.get('/api/get-schedule-doctor-by-id', doctorController.getScheduleDoctorById);
+
+    router.post('/api/create-allcodes', doctorController.handleCreateAllcodes);
 
     return app.use('/', router);
 };

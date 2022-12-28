@@ -78,7 +78,6 @@ const getAllParentCategory = async (req, res) => {
 const getAllCategory = async (req, res) => {
     try {
         let limit = req.query.limit;
-        console.log(typeof limit);
         let response = await productService.getAllCategory(+limit);
         return res.status(200).json(response);
     } catch (e) {
@@ -260,6 +259,30 @@ const handleAddCoupon = async (req, res) => {
         }
     }
 };
+const handleDeleteCoupon = async (req, res) => {
+    if (req.body) {
+        try {
+            let response = await productService.handleDeleteCoupon(req.query.id);
+            return res.status(200).json(response);
+        } catch (e) {
+            return res.status(200).json({
+                errCode: -1,
+                errMessage: 'Error from server...',
+            });
+        }
+    }
+};
+const getAllCoupon = async (req, res) => {
+    try {
+        let response = await productService.getAllCoupon();
+        return res.status(200).json(response);
+    } catch (e) {
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server...',
+        });
+    }
+};
 const handleUpdateCoupon = async (req, res) => {
     if (req.body) {
         try {
@@ -286,7 +309,6 @@ const handleSearchCoupon = async (req, res) => {
 };
 
 const handleCreateOrder = async (req, res) => {
-    console.log('check:', req.body);
     try {
         let response = await productService.handleCreateOrder(req.body);
         return res.status(200).json(response);
@@ -331,6 +353,72 @@ const handleTurnoverWeek = async (req, res) => {
         });
     }
 };
+const handleAddGift = async (req, res) => {
+    try {
+        let response = await productService.handleAddGift(req.body);
+        return res.status(200).json(response);
+    } catch (e) {
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server...',
+        });
+    }
+};
+const handleGetAllGift = async (req, res) => {
+    try {
+        let response = await productService.handleGetAllGift();
+        return res.status(200).json(response);
+    } catch (e) {
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server...',
+        });
+    }
+};
+const handleGetAllGiftActive = async (req, res) => {
+    try {
+        let response = await productService.handleGetAllGiftActive();
+        return res.status(200).json(response);
+    } catch (e) {
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server...',
+        });
+    }
+};
+const handleEditGift = async (req, res) => {
+    try {
+        let response = await productService.handleEditGift(req.body);
+        return res.status(200).json(response);
+    } catch (e) {
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server...',
+        });
+    }
+};
+const handleGetDetailGift = async (req, res) => {
+    try {
+        let response = await productService.handleGetDetailGift(req.query.id);
+        return res.status(200).json(response);
+    } catch (e) {
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server...',
+        });
+    }
+};
+const handleDeleteGift = async (req, res) => {
+    try {
+        let response = await productService.handleDeleteGift(req.query.id);
+        return res.status(200).json(response);
+    } catch (e) {
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server...',
+        });
+    }
+};
 module.exports = {
     createNewBrand,
     getAllBrands,
@@ -352,11 +440,19 @@ module.exports = {
     getAllProductHome,
     handleAddProductToCart,
     handleAddCoupon,
+    getAllCoupon,
     handleUpdateCoupon,
+    handleDeleteCoupon,
     handleSearchCoupon,
     handleCreateOrder,
     getProductByCategory,
     getTurnover,
     handleTurnoverMonth,
     handleTurnoverWeek,
+    handleAddGift,
+    handleGetAllGift,
+    handleGetAllGiftActive,
+    handleEditGift,
+    handleGetDetailGift,
+    handleDeleteGift,
 };
