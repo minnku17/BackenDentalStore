@@ -2420,6 +2420,8 @@ const handleSearchProduct = (q) => {
                         attributes: ['photo'],
                     },
                 ],
+                raw: false,
+                nest: true,
             };
 
             let res = await db.Product.findAll(options);
