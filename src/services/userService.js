@@ -105,7 +105,7 @@ const generateAccessToken = (user) => {
         },
         process.env.JWT_ACCESS_KEY,
         {
-            expiresIn: '20s',
+            expiresIn: '1d',
         },
     );
 };
@@ -247,6 +247,8 @@ let handleRefreshToken = (refreshToken) => {
         try {
             let user = await db.User.findOne({
                 where: { rememberToken: refreshToken },
+                raw: false,
+                nest: true,
             });
             if (!user) {
                 resolve({

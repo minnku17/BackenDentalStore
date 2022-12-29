@@ -514,51 +514,50 @@ const saveDetailProduct = (data) => {
                             errMessage: 'Create product successfully',
                         });
                     }
-                }
-                if (data.action === 'EDIT') {
-                    let res = await db.Product.findOne({
-                        where: { id: data.id },
-                    });
-                    if (res) {
-                        res.cat_id = data.cat_id;
-                        res.brand_id = data.brand_id;
-                        res.title = data.title;
-                        res.photo = data.photo;
-                        res.type = data.type;
-                        res.stock = data.stock;
-                        res.unit_of_product = data.unit_of_product;
-                        res.expiry = data.expiry;
-                        res.price = data.price;
-                        res.discount = data.discount;
-                        res.condition = data.condition;
-                        res.status = data.status;
-                        await res.save();
-                    }
+                } else if (data.action === 'EDIT') {
+                    await db.Product.update(
+                        {
+                            cat_id: data.cat_id,
+                            brand_id: data.brand_id,
+                            title: data.title,
+                            photo: data.photo,
+                            type: data.type,
+                            stock: data.stock,
+                            unit_of_product: data.unit_of_product,
+                            expiry: data.expiry,
+                            price: data.price,
+                            discount: data.discount,
+                            condition: data.condition,
+                            status: data.status,
+                        },
+                        {
+                            where: { id: data.id },
+                        },
+                    );
 
-                    let productMarkdown = await db.Markdown.findOne({
-                        where: { product_id: res.id },
-                    });
-
-                    if (productMarkdown) {
-                        productMarkdown.descriptionHtml = data.descriptionHtml;
-                        productMarkdown.descriptionMarkdown = data.descriptionMarkdown;
-                        productMarkdown.specificationHtml = data.specificationHtml;
-                        productMarkdown.specificationMarkdown = data.specificationMarkdown;
-                        productMarkdown.featureHtml = data.featureHtml;
-                        productMarkdown.featureMarkdown = data.featureMarkdown;
-                        productMarkdown.assignHtml = data.assignHtml;
-                        productMarkdown.assignMarkdown = data.assignMarkdown;
-                        await productMarkdown.save();
-                    }
-
+                    await db.Markdown.update(
+                        {
+                            descriptionHtml: data.descriptionHtml,
+                            descriptionMarkdown: data.descriptionMarkdown,
+                            specificationHtml: data.specificationHtml,
+                            specificationMarkdown: data.specificationMarkdown,
+                            featureHtml: data.featureHtml,
+                            featureMarkdown: data.featureMarkdown,
+                            assignHtml: data.assignHtml,
+                            assignMarkdown: data.assignMarkdown,
+                        },
+                        {
+                            where: { product_id: data.id },
+                        },
+                    );
                     await db.Image.destroy({
-                        where: { product_id: res.id },
+                        where: { product_id: data.id },
                     });
                     let arrPhoto = [];
                     data.photo.map((item) => {
                         let obj = {};
 
-                        obj.product_id = res.id;
+                        obj.product_id = data.id;
                         obj.photo = item;
 
                         return arrPhoto.push(obj);
