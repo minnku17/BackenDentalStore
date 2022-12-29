@@ -2262,6 +2262,8 @@ const getProductInfoAdminById = (id) => {
                         attributes: ['photo'],
                     },
                 ],
+                raw: false,
+                nest: true,
             });
 
             if (!res) {
