@@ -110,7 +110,6 @@ let getProfileDoctorById = async (req, res) => {
 };
 let getScheduleDoctorById = async (req, res) => {
     try {
-        console.log('check', req.query.action);
         let info = await doctorService.getScheduleDoctorById(req.query.id, req.query.date, req.query.action);
         return res.status(200).json(info);
     } catch (e) {

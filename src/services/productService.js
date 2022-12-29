@@ -2219,10 +2219,6 @@ const getAllProductHome = () => {
             });
 
             if (res) {
-                console.log('check', res);
-                // res.forEach((item) => {
-                //     return (item.photo = new Buffer(item.photo, 'base64').toString('binary'));
-                // });
                 let arr = [];
                 res.map((item) => {
                     let productData = {};
@@ -2680,15 +2676,12 @@ const handleCreateOrder = (data) => {
                 firstName: data.firstName,
                 address: data.address,
                 phonenumber: data.phonenumber,
-                note: data.note,
+                note: data.note ? data.note : '',
                 email: data.email,
                 status: data.status,
             });
-            console.log('check data', res);
 
             let arr = [];
-            console.log('check data');
-
             data.product.map((item) => {
                 let obj = {};
 
@@ -2698,8 +2691,6 @@ const handleCreateOrder = (data) => {
 
                 return arr.push(obj);
             });
-            console.log('check data', arr);
-
             await db.ProductOrder.bulkCreate(arr);
             arr.forEach(async (item) => {
                 let prod = await db.Product.findOne({
@@ -2766,8 +2757,6 @@ const handleTurnover = (data) => {
             const TODAY_START = new Date(data).setUTCHours(0, 0, 0, 0);
 
             const NOW = new Date(data).setUTCHours(23, 59, 59, 999);
-            console.log('check data input', NOW);
-
             const products = await db.Order.findAll({
                 where: {
                     createdAt: {
@@ -2777,9 +2766,6 @@ const handleTurnover = (data) => {
                 },
                 attributes: ['order_number', 'sub_total'],
             });
-
-            console.log('check data ', products);
-
             resolve({
                 errCode: 0,
                 data: products,
@@ -2793,11 +2779,6 @@ const handleTurnover = (data) => {
 
 const handleTurnoverWeek = (data) => {
     return new Promise(async (resolve, reject) => {
-        // const TODAY_START = moment('2022-11-01').format('YYYY-MM-DD 00:00');
-        // const NOW = moment('2022-11-30').format('YYYY-MM-DD 23:59');
-
-        // console.log('check data', TODAY_START, NOW);
-
         try {
             const products = await db.Order.findAll({
                 where: {
@@ -2929,7 +2910,6 @@ const handleEditGift = (data) => {
             if (res) {
                 res.title = data.title;
                 res.status = +data.status;
-                console.log('check gift', res);
                 await res.save();
                 resolve({
                     errCode: 0,
@@ -2976,7 +2956,6 @@ const handleDeleteGift = (id) => {
             const gift = await db.Gift.destroy({
                 where: { id: id },
             });
-            console.log('check delete', gift);
             if (gift) {
                 resolve({
                     errCode: 0,

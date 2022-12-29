@@ -296,8 +296,6 @@ let getScheduleDoctorByDate = (doctorId, date) => {
                     raw: false,
                     nest: true,
                 });
-                console.log('checkd ata', dataSchedule);
-
                 if (!dataSchedule) dataSchedule = [];
 
                 resolve({

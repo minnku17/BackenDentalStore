@@ -196,7 +196,6 @@ let handleUserLogin = (email, password) => {
 };
 let handleCustomerLogin = (data) => {
     return new Promise(async (resolve, reject) => {
-        console.log('check data', data);
         try {
             let userData = {};
             let isExits = await checkUserEmail(data.email);
