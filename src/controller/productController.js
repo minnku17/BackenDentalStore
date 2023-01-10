@@ -419,6 +419,17 @@ const handleDeleteGift = async (req, res) => {
         });
     }
 };
+const getProductOrder = async (req, res) => {
+    try {
+        let response = await productService.getProductOrder();
+        return res.status(200).json(response);
+    } catch (e) {
+        return res.status(200).json({
+            errCode: -1,
+            errMessage: 'Error from server...',
+        });
+    }
+};
 module.exports = {
     createNewBrand,
     getAllBrands,
@@ -455,4 +466,5 @@ module.exports = {
     handleEditGift,
     handleGetDetailGift,
     handleDeleteGift,
+    getProductOrder,
 };

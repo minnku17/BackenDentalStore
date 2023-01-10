@@ -24,8 +24,8 @@ let initWebRoutes = (app) => {
     //authenticate
     router.post(
         '/api/register',
-        // middlewareController.verifyToken,
-        // middlewareController.verifyTokenAndAdminAuth,
+        middlewareController.verifyToken,
+        middlewareController.verifyTokenAndAdminAuth,
         authController.registerUser,
     );
     router.post('/api/login', authController.handleLogin);
@@ -192,6 +192,8 @@ let initWebRoutes = (app) => {
     router.get('/api/getTurnoverWeek', productController.handleTurnoverWeek);
 
     router.get('/api/getTurnoverMonth', productController.handleTurnoverMonth);
+
+    router.get('/api/getProductOrder', productController.getProductOrder);
     //customer
 
     router.get(

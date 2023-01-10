@@ -2683,13 +2683,12 @@ const handleCreateOrder = (data) => {
             });
 
             let arr = [];
+
             data.product.map((item) => {
                 let obj = {};
-
                 obj.product_id = item.product_id;
                 obj.quantity = item.quantity;
                 obj.order_id = res.id;
-
                 return arr.push(obj);
             });
             await db.ProductOrder.bulkCreate(arr);
@@ -2974,6 +2973,39 @@ const handleDeleteGift = (id) => {
         }
     });
 };
+const getProductOrder = (id) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const products = await db.ProductOrder.findAll({
+                where: {
+                    createdAt: {
+                        [Op.gte]: moment().subtract(1, 'w'),
+                        // [Op.lte]: NOW,
+                    },
+                },
+                include: [
+                    {
+                        model: db.Product,
+                        attributes: ['title'],
+
+                        as: 'imageData',
+                    },
+                ],
+                order: [['createdAt', 'DESC']],
+                raw: false,
+                nest: true,
+            });
+
+            resolve({
+                errCode: 0,
+                data: products,
+            });
+        } catch (e) {
+            console.log('check ', e);
+            reject(e);
+        }
+    });
+};
 module.exports = {
     createNewBrand,
     getAllBrands,
@@ -3011,4 +3043,5 @@ module.exports = {
     handleEditGift,
     handleGetDetailGift,
     handleDeleteGift,
+    getProductOrder,
 };
