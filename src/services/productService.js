@@ -605,11 +605,6 @@ const handleDeleteProduct = (id) => {
 const getAllProduct = () => {
     return new Promise(async (resolve, reject) => {
         try {
-            const dateLogin = moment(new Date()).format('DD/MM/YYYY');
-            const timeLogin = moment(new Date()).format('HH:mm');
-            await db.HistoryLogin.create({
-                time: `Xem trang chủ ngày: ${dateLogin}, giờ: ${timeLogin}`,
-            });
             let res = await db.Product.findAll({
                 raw: false,
                 include: [
@@ -2201,6 +2196,11 @@ const getProductByCategory = (data) => {
 };
 const getAllProductHome = () => {
     return new Promise(async (resolve, reject) => {
+        const dateLogin = moment(new Date()).format('DD/MM/YYYY');
+        const timeLogin = moment(new Date()).format('HH:mm');
+        await db.HistoryLogin.create({
+            time: `Xem trang chủ ngày: ${dateLogin}, giờ: ${timeLogin}`,
+        });
         try {
             let res = await db.Product.findAll({
                 attributes: ['id', 'title', 'price', 'sold', 'discount', 'unit_of_product'],
