@@ -1,6 +1,7 @@
 import db from '../models/index';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import moment from 'moment/moment';
 
 let handleRegisterUser = (data) => {
     return new Promise(async (resolve, reject) => {
@@ -153,6 +154,12 @@ let handleUserLogin = (email, password) => {
                 if (user) {
                     let check = await bcrypt.compareSync(password, user.password);
                     if (check) {
+                        const dateLogin = moment(new Date()).format('DD/MM/YYYY');
+                        const timeLogin = moment(new Date()).format('HH:mm');
+                        await db.HistoryLogin.create({
+                            time: `Đăng nhập ngày: ${dateLogin}, giờ: ${timeLogin}`,
+                        });
+
                         const accessToken = generateAccessToken(user);
                         const refreshToken = generateRefreshToken(user);
 
