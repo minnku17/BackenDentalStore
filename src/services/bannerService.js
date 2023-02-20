@@ -37,7 +37,7 @@ const handleUpdateBanner = (data) => {
                         photo: data.photo,
                     },
                     {
-                        where: { id: data.id },
+                        where: { banner_id: data.id },
                     },
                 );
 
@@ -63,6 +63,7 @@ const handleGetAllBanner = () => {
                         attributes: ['id', 'photo'],
                     },
                 ],
+                order: [['id']],
                 raw: false,
                 nest: true,
             });

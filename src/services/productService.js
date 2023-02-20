@@ -313,8 +313,8 @@ const getAllParentCategory = (limit) => {
                     nest: true,
                 });
                 allCat.forEach((item) => {
-                    if (item.Image.photo) {
-                        item.Image.photo = new Buffer(item.Image.photo, 'base64').toString('binary');
+                    if (item.Image?.photo) {
+                        item.Image.photo = new Buffer(item.Image?.photo, 'base64').toString('binary');
                     }
                 });
 

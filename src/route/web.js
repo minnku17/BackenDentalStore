@@ -24,8 +24,8 @@ let initWebRoutes = (app) => {
     //authenticate
     router.post(
         '/api/register',
-        middlewareController.verifyToken,
-        middlewareController.verifyTokenAndAdminAuth,
+        // middlewareController.verifyToken,
+        // middlewareController.verifyTokenAndAdminAuth,
         authController.registerUser,
     );
     router.post('/api/login', authController.handleLogin);
